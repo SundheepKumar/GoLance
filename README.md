@@ -17,14 +17,19 @@ Getting Started (Local Development)
 1. Clone the repo
 
 git clone https://github.com/SundheepKumar/GoLance.git
+
 cd GoLance
 
 2. Frontend Setup
 
 cd frontend
+
 npm install
+
 npm run dev
+
 Runs at: http://localhost:5173 (Vite default)
+
 
 Edit .env in frontend/ to set your backend API URL:
 
@@ -33,10 +38,14 @@ VITE_API_URL=http://localhost:8080/api
 3. Backend Setup
 
 cd backend
+
 ./mvnw spring-boot:run
+
 Runs at: http://localhost:8080
 
+
 Edit application.properties in backend/src/main/resources/:
+
 
 properties
 
@@ -48,7 +57,9 @@ spring.jpa.hibernate.ddl-auto=update
 --------------------------------------------------------------------------------
 
 Team Git Workflow
+
 Branches
+
 main → stable, production-ready
 
 dev → integration branch for all features
@@ -60,6 +71,8 @@ Examples:
 feature/frontend-task-list
 feature/backend-auth-api
 Flow
+
+--------------------------------------------------------------------------------
 Before starting work:
 
 
