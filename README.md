@@ -1,16 +1,20 @@
 GoLance
 Campus freelancing platform — frontend in React + Bootstrap, backend in Spring Boot.
-
+--------------------------------------------------------------------------------
 Project Structure
 bash
 Copy
 Edit
 GoLance/
 ├── frontend/   # React app (Bootstrap + plain CSS)
+
 ├── backend/    # Spring Boot app (Maven)
+
 ├── .gitignore
+
 └── README.md
 
+--------------------------------------------------------------------------------
 Getting Started (Local Development)
 
 1. Clone the repo
@@ -54,6 +58,7 @@ spring.datasource.username=root
 spring.datasource.password=yourpassword
 spring.jpa.hibernate.ddl-auto=update
 
+--------------------------------------------------------------------------------
 
 Team Git Workflow
 Branches
@@ -93,8 +98,7 @@ At least 1 review before merge
 
 Periodically merge dev → main for releases
 
-
-
+--------------------------------------------------------------------------------
 
 ✅ Contribution Rules
 Never commit directly to main
