@@ -3,6 +3,8 @@ package com.golance.backend.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name="users")
 public class User {
@@ -23,6 +25,8 @@ public class User {
 
     private String role="STUDENT";
 
+//    @Column(nullable = false)
+//    private LocalDateTime registered_on;
 
     public Long getId() {
         return id;
