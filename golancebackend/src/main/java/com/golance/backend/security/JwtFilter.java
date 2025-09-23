@@ -39,6 +39,7 @@ public class JwtFilter extends OncePerRequestFilter{
 		
 		if(authHeader == null || !authHeader.startsWith("Bearer")) {  //if it does not have a bearer token, then it is simply passed to the next filter (refer SecurityConfig)
 			filterChain.doFilter(request, response);
+			return;
 			
 		}
 		

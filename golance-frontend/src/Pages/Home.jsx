@@ -32,6 +32,7 @@ const developers = [
 ];
 
 export default function Home() {
+  
   return (
     <>
     <Header />

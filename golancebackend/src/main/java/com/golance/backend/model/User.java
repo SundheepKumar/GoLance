@@ -29,7 +29,7 @@ public class User {
     
     private int year;
     
-    private String[] skills;
+   // private String[] skills;
 
 //    @Column(nullable = false)
 //    private LocalDateTime registered_on;
@@ -90,13 +90,13 @@ public class User {
 		this.year = year;
 	}
 
-	public String[] getSkills() {
-		return skills;
-	}
-
-	public void setSkills(String[] skills) {
-		this.skills = skills;
-	}
+//	public String[] getSkills() {
+//		return skills;
+//	}
+//
+//	public void setSkills(String[] skills) {
+//		this.skills = skills;
+//	}
 }
 
     
