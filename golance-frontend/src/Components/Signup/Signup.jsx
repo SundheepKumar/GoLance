@@ -86,7 +86,6 @@ export default function SignupScreen({ onSignup }) {
 
   return (
     <>
-      <Header />
       <div className="container d-flex align-items-center justify-content-center min-vh-100 mt-5 mb-5">
         <div className="card p-4 shadow" style={{ maxWidth: 500, width: "100%" }}>
           <div className="text-center mb-3">

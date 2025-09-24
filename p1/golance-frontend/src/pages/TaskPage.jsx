@@ -12,11 +12,11 @@ export default function TaskPage() {
   const [bidDescription, setBidDescription] = useState("");
 
   const user = JSON.parse(localStorage.getItem("user")); // Make sure user is logged in
-
+  console.log("Make sure the user is logged from TASKS: "+ user);
   // Fetch all tasks
   const fetchTasks = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/tasks");
+      const res = await fetch("http://localhost:8080/api/tasks/all");
       if (!res.ok) throw new Error("Failed to fetch tasks");
       const data = await res.json();
       setTasks(data);

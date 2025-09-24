@@ -14,6 +14,7 @@ export default function LoginScreen({ onLogin }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -31,6 +32,9 @@ export default function LoginScreen({ onLogin }) {
 
       const data = await res.json();
       localStorage.setItem("token", data.token); // Save JWT token
+      localStorage.setItem("username", data.user.username);
+
+      console.log("Login successful:", data);
       onLogin && onLogin(data);
       navigate("/home");
     } catch (err) {
@@ -42,7 +46,6 @@ export default function LoginScreen({ onLogin }) {
   return (
     <>
     
-      <Header />
         <>
         {/* show the message at top */}
         {message && <div className="alert alert-success text-center">{message}</div>}

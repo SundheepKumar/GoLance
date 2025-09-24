@@ -35,7 +35,6 @@ export default function Home() {
   
   return (
     <>
-    <Header />
     <div>
 
       {/* Info Section */}

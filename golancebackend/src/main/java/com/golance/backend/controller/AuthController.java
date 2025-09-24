@@ -30,23 +30,29 @@ public class AuthController {
 	@SuppressWarnings("rawtypes")
 	@PostMapping("/login")
 	public ResponseEntity login(@RequestBody User user) {
-		try {
-			Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-			
-			UserDetails userDetails = (UserDetails) authentication.getPrincipal();	
-			
-			String token = jwtUtil.generateToken(userDetails);
-			
-			return ResponseEntity.ok(Map.of("token", token));
-			
-		}
-		
-		catch(Exception e) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid"));
-			
-		}
-		
-		
+	    try {
+	        Authentication authentication = authManager.authenticate(
+	            new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+	        );
+
+	        UserDetails userDetails = (UserDetails) authentication.getPrincipal();    
+	        String token = jwtUtil.generateToken(userDetails);
+
+	        // return token + basic user info
+	        Map<String, Object> response = Map.of(
+	            "token", token,
+	            "user", Map.of(
+	                "username", userDetails.getUsername(),
+	                "email", userDetails.getAuthorities())
+	                // optionally add roles, email, etc.
+	            )
+	        );
+
+	        return ResponseEntity.ok(response);
+	        
+	    } catch(Exception e) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid"));
+	    }
 	}
 
 }

@@ -23,18 +23,18 @@ public class UserController {
     }
 
     //login user
-    @PostMapping("/login")
-    public String loginUser(@RequestBody User loginRequest){
-        boolean isValid = userService.validateUser(
-                loginRequest.getEmail(),
-                loginRequest.getPassword()
-        );
-
-        if(isValid){
-            return "Login Successful";
-        }
-        else{
-            return "Invalid email or password";
-        }
-    }
+//    @PostMapping("/login")
+//    public String loginUser(@RequestBody User loginRequest){
+//        boolean isValid = userService.validateUser(
+//                loginRequest.getEmail(),
+//                loginRequest.getPassword()
+//        );
+//
+//        if(isValid){
+//            return "Login Successful";
+//        }
+//        else{
+//            return "Invalid email or password";
+//        }
+//    }
 }
