@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,22 +17,27 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:8080/api/users/login", {
+      const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) throw new Error("Login failed");
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Login failed");
+      }
 
-      const data = await res.json(); // ✅ expecting JSON now
+      const data = await res.json(); // expecting { token, user }
 
-      if (data.message === "Login Successful") {
-        // Save user in localStorage for later use
-        localStorage.setItem("user", JSON.stringify(data));
+      if (data.token && data.user) {
+        // ✅ Save token and user in localStorage
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
         navigate("/home"); // redirect to HomePage
       } else {
-        setError(data.message || "Invalid email or password");
+        setError("Invalid username or password");
       }
     } catch (err) {
       setError(err.message || "Something went wrong");
@@ -59,11 +64,11 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <input
-              type="email"
-              name="email"
-              placeholder="Email"
+              type="text"
+              name="username"
+              placeholder="Username"
               className="form-control"
-              value={form.email}
+              value={form.username}
               onChange={handleChange}
               required
             />

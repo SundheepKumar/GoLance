@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Button, Modal, Form } from "react-bootstrap";
+import { Button, Modal, Form, Tabs, Tab } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function MyTasks() {
   const [tasks, setTasks] = useState([]);
+  const [bids, setBids] = useState([]);
   const [deleteTaskId, setDeleteTaskId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -21,10 +22,25 @@ export default function MyTasks() {
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token"); // JWT token
 
+  const headers = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`,
+  };
+
+  // Fetch tasks posted by user
   const fetchTasks = async () => {
+    if (!user || !token) {
+      alert("You must be logged in to view your tasks.");
+      navigate("/login");
+      return;
+    }
+
     try {
-      const res = await fetch(`http://localhost:8080/api/tasks/user/${user.id}`);
+      const res = await fetch(`http://localhost:8080/api/tasks/user/${user.id}`, {
+        headers,
+      });
       const data = await res.json();
       setTasks(data);
     } catch (err) {
@@ -32,8 +48,22 @@ export default function MyTasks() {
     }
   };
 
+  // Fetch bids placed by user
+  const fetchBids = async () => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/bids/user/${user.id}`, {
+        headers,
+      });
+      const data = await res.json();
+      setBids(data);
+    } catch (err) {
+      console.error("Failed to fetch bids", err);
+    }
+  };
+
   useEffect(() => {
     fetchTasks();
+    fetchBids();
   }, []);
 
   const handleDeleteClick = (taskId) => {
@@ -43,13 +73,18 @@ export default function MyTasks() {
 
   const confirmDelete = async () => {
     try {
-      await fetch(`http://localhost:8080/api/tasks/${deleteTaskId}`, {
+      const res = await fetch(`http://localhost:8080/api/tasks/${deleteTaskId}`, {
         method: "DELETE",
+        headers,
       });
-      alert("Task deleted successfully!");
-      setShowDeleteModal(false);
-      setDeleteTaskId(null);
-      fetchTasks();
+      if (res.ok) {
+        alert("Task deleted successfully!");
+        setShowDeleteModal(false);
+        setDeleteTaskId(null);
+        fetchTasks();
+      } else {
+        alert("Failed to delete task");
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to delete task");
@@ -57,15 +92,7 @@ export default function MyTasks() {
   };
 
   const handleEditClick = (task) => {
-    setEditTask({
-      id: task.id,
-      title: task.title,
-      description: task.description,
-      category: task.category,
-      creditsOffered: task.creditsOffered,
-      deadline: task.deadline,
-      status: task.status,
-    });
+    setEditTask({ ...task });
     setShowEditModal(true);
   };
 
@@ -75,14 +102,18 @@ export default function MyTasks() {
 
   const saveEdit = async () => {
     try {
-      await fetch(`http://localhost:8080/api/tasks/${editTask.id}`, {
+      const res = await fetch(`http://localhost:8080/api/tasks/${editTask.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(editTask),
       });
-      alert("Task updated successfully!");
-      setShowEditModal(false);
-      fetchTasks();
+      if (res.ok) {
+        alert("Task updated successfully!");
+        setShowEditModal(false);
+        fetchTasks();
+      } else {
+        alert("Failed to update task");
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to update task");
@@ -93,62 +124,91 @@ export default function MyTasks() {
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">My Tasks</h2>
+      <h2 className="mb-4">My Dashboard</h2>
 
-      <table className="table table-bordered">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Category</th>
-            <th>Credits</th>
-            <th>Deadline</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tasks.map((task) => (
-            <tr key={task.id}>
-              <td>{task.title}</td>
-              <td>{task.description}</td>
-              <td>{task.category}</td>
-              <td>{task.creditsOffered}</td>
-              <td>{task.deadline}</td>
-              <td>{task.status}</td>
-              <td>
-                 <Button
-                  variant="info"
-                  size="sm"
-                  className="me-2"
-                  onClick={() => navigate(`/tasks/${task.id}/bids`)}
-                >
-                  View Bids
-                </Button>
-                <Button
-                  variant="warning"
-                  size="sm"
-                  className="me-2"
-                  onClick={() => handleEditClick(task)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDeleteClick(task.id)}
-                >
-                  Delete
-                </Button>
-               
+      <Tabs defaultActiveKey="tasks" id="my-tasks-tabs" className="mb-3">
+        {/* ---------------- Tasks Posted by Me ---------------- */}
+        <Tab eventKey="tasks" title="Tasks Posted by Me">
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Credits</th>
+                <th>Deadline</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tasks.map((task) => (
+                <tr key={task.id}>
+                  <td>{task.title}</td>
+                  <td>{task.description}</td>
+                  <td>{task.category}</td>
+                  <td>{task.creditsOffered}</td>
+                  <td>{task.deadline}</td>
+                  <td>{task.status}</td>
+                  <td>
+                    <Button
+                      variant="info"
+                      size="sm"
+                      className="me-2"
+                      onClick={() => navigate(`/tasks/${task.id}/bids`)}
+                    >
+                      View Bids
+                    </Button>
+                    <Button
+                      variant="warning"
+                      size="sm"
+                      className="me-2"
+                      onClick={() => handleEditClick(task)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleDeleteClick(task.id)}
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Tab>
 
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        {/* ---------------- Bids Placed by Me ---------------- */}
+        <Tab eventKey="bids" title="Bids Placed by Me">
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th>Task ID</th>
+                <th>Credits Offered</th>
+                <th>Description</th>
+                <th>Estimated Days</th> {/* NEW */}
+                <th>Bid ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bids.map((bid) => (
+                <tr key={bid.id}>
+                  <td>{bid.taskId}</td>
+                  <td>{bid.credits}</td>
+                  <td>{bid.description}</td>
+                  <td>{bid.estimatedDays}</td> {/* NEW */}
+                  <td>{bid.id}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Tab>
+      </Tabs>
 
-      {/* Edit Task Modal */}
+      {/* ---------------- Edit Task Modal ---------------- */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Edit Task</Modal.Title>
@@ -228,7 +288,7 @@ export default function MyTasks() {
         </Modal.Footer>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
+      {/* ---------------- Delete Confirmation Modal ---------------- */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Confirm Delete</Modal.Title>

@@ -13,6 +13,7 @@ export default function PostTask() {
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user")); // logged-in user
+  const token = localStorage.getItem("token"); // JWT token
 
   const handleChange = (e) => {
     setTask({ ...task, [e.target.name]: e.target.value });
@@ -21,6 +22,12 @@ export default function PostTask() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!user || !token) {
+      alert("You must be logged in to post a task.");
+      navigate("/login");
+      return;
+    }
+
     const taskData = {
       title: task.title,
       description: task.description,
@@ -28,19 +35,22 @@ export default function PostTask() {
       deadline: task.deadline,
       status: "PENDING",
       creditsOffered: parseInt(task.creditsOffered),
-      postedById: user.id, // match TaskRequestDto
+      postedById: user.id,
     };
 
     try {
       const response = await fetch("http://localhost:8080/api/tasks", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // send JWT token
+        },
         body: JSON.stringify(taskData),
       });
 
       if (response.ok) {
         alert("Task posted successfully!");
-        navigate("/my-tasks"); // redirect
+        navigate("/my-tasks");
       } else {
         const err = await response.json();
         alert("Failed to post task: " + (err.message || "Unknown error"));

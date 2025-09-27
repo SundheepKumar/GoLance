@@ -25,7 +25,7 @@ export default function HomePage() {
       <header>
         <nav className="navbar navbar-expand-lg bg-body-tertiary px-3">
           <div className="container-fluid">
-            {/* Left: Logo + Brand */}
+            {/* Logo */}
             <Link to="/home" className="navbar-brand d-flex align-items-center">
               <img
                 src={golanceLogo}
@@ -36,7 +36,7 @@ export default function HomePage() {
               <span className="fw-bold fs-5">GoLance</span>
             </Link>
 
-            {/* Navbar Toggler (Mobile) */}
+            {/* Mobile toggle */}
             <button
               className="navbar-toggler"
               type="button"
@@ -49,9 +49,8 @@ export default function HomePage() {
               <span className="navbar-toggler-icon"></span>
             </button>
 
-            {/* Center + Right */}
+            {/* Navbar links */}
             <div className="collapse navbar-collapse" id="navbarContent">
-              {/* Center: Navigation Links */}
               <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
                 <li className="nav-item">
                   <Link className="nav-link active" to="/home">
@@ -74,25 +73,39 @@ export default function HomePage() {
                   </a>
                 </li>
               </ul>
+            </div>
 
-              {/* Right: CTA */}
-              <div className="d-flex">
-                {user ? (
-                  <>
-                    <span className="me-3" >Welcome, {user.username}</span>
-                    <button
-                      onClick={handleLogout}
-                      className="btn btn-outline-danger"
-                    >
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <Link to="/login" className="btn btn-primary px-4">
-                    Sign In
-                  </Link>
-                )}
-              </div>
+            {/* Profile / Sign In */}
+            <div className="d-flex align-items-center">
+              {user ? (
+                <div className="dropdown">
+                  <button
+                    className="btn btn-outline-secondary dropdown-toggle"
+                    type="button"
+                    id="profileDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    {user.username}
+                  </button>
+                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                    <li>
+                      <Link className="dropdown-item" to={`/profile/${user.id}`}>
+                        View Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <button className="dropdown-item" onClick={handleLogout}>
+                        Logout
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              ) : (
+                <Link to="/login" className="btn btn-primary px-4">
+                  Sign In
+                </Link>
+              )}
             </div>
           </div>
         </nav>
@@ -106,7 +119,7 @@ export default function HomePage() {
         </p>
 
         {user ? (
-          <div className="d-flex justify-content-center gap-3">
+          <div className="d-flex justify-content-center gap-3 flex-wrap">
             <Link to="/post-task" className="btn btn-success btn-lg">
               Post Task
             </Link>
@@ -116,7 +129,6 @@ export default function HomePage() {
             <Link to="/tasks" className="btn btn-primary btn-lg">
               View All Tasks
             </Link>
-            
           </div>
         ) : (
           <div>

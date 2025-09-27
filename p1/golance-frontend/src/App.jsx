@@ -8,7 +8,7 @@ import PostTask from "./pages/PostTask";
 import MyTasks from "./pages/MyTasks";
 import TaskPage from "./pages/TaskPage";
 import TaskBids from "./pages/TaskBids";
-
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -26,7 +26,8 @@ function App() {
         <Route path="/my-tasks" element={<MyTasks />} />
         <Route path="/tasks" element={<TaskPage />} />
         <Route path="/tasks/:taskId/bids" element={<TaskBids />} />
-        
+        <Route path="/profile/:id" element={<ProfilePage />} /> {/* <- :id is required */}
+
       </Routes>
     </Router>
   );

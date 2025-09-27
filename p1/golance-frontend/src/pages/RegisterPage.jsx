@@ -4,7 +4,14 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    skills: "",
+    studyingYear: "",
+    department: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,32 +24,25 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      // Step 1: Register user
-      const res = await fetch("http://localhost:8080/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      const registerRes = await fetch(
+        "http://localhost:8080/api/users/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }
+      );
 
-      if (!res.ok) throw new Error("Registration failed");
-
-      // Step 2: After successful registration, login immediately
-      const loginRes = await fetch("http://localhost:8080/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password }),
-      });
-
-      if (!loginRes.ok) throw new Error("Login after registration failed");
-
-      const data = await loginRes.json();
-
-      if (data.message === "Login Successful") {
-        localStorage.setItem("user", JSON.stringify(data));
-        navigate("/"); // redirect to HomePage
-      } else {
-        setError(data.message || "Could not login after registration");
+      if (!registerRes.ok) {
+        const errData = await registerRes.json();
+        throw new Error(errData?.message || "Registration failed");
       }
+
+      const registeredUser = await registerRes.json();
+
+      // Show success and redirect to login page
+      alert("Registration successful! Please login.");
+      navigate("/login");
     } catch (err) {
       setError(err.message || "Something went wrong");
     } finally {
@@ -98,6 +98,46 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
             />
+          </div>
+          <div className="mb-3">
+            <input
+              type="text"
+              name="skills"
+              placeholder="Skills (comma separated)"
+              className="form-control"
+              value={form.skills}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="mb-3">
+            <select
+              name="studyingYear"
+              className="form-select"
+              value={form.studyingYear}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select Year</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+          <div className="mb-3">
+            <select
+              name="department"
+              className="form-select"
+              value={form.department}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select Department</option>
+              <option value="CSE">CSE</option>
+              <option value="ECE">ECE</option>
+              <option value="EEE">EEE</option>
+              <option value="SWE">SWE</option>
+            </select>
           </div>
           <button
             type="submit"

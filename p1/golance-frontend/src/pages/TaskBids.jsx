@@ -9,21 +9,34 @@ export default function TaskBids() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const token = localStorage.getItem("token"); // JWT token
+  const headers = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`,
+  };
+
   useEffect(() => {
     const fetchBids = async () => {
+      if (!token) {
+        alert("You must be logged in to view bids.");
+        navigate("/login");
+        return;
+      }
+
       try {
-        const res = await fetch(`http://localhost:8080/api/bids/tasks/${taskId}`);
+        const res = await fetch(`http://localhost:8080/api/bids/tasks/${taskId}`, { headers });
         if (!res.ok) throw new Error("Failed to fetch bids");
         const data = await res.json();
         setBids(data);
       } catch (err) {
-        setError(err.message);
+        setError(err.message || "Something went wrong");
       } finally {
         setLoading(false);
       }
     };
+
     fetchBids();
-  }, [taskId]);
+  }, [taskId, navigate, token]);
 
   if (loading) return <p>Loading bids...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
@@ -41,6 +54,7 @@ export default function TaskBids() {
               <th>Bidder</th>
               <th>Credits</th>
               <th>Description</th>
+              <th>Estimated Days</th> {/* New column */}
             </tr>
           </thead>
           <tbody>
@@ -49,6 +63,7 @@ export default function TaskBids() {
                 <td>{bid.bidderName}</td>
                 <td>{bid.credits}</td>
                 <td>{bid.description}</td>
+                <td>{bid.estimatedDays}</td> {/* Display estimated days */}
               </tr>
             ))}
           </tbody>
