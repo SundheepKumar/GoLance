@@ -4,6 +4,7 @@ public class BidRequest {
     private Long userId;
     private int credits;
     private String description;
+    private int estimatedDays; // <--- NEW FIELD
 
     // Getters & Setters
     public Long getUserId() { return userId; }
@@ -14,4 +15,7 @@ public class BidRequest {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public int getEstimatedDays() { return estimatedDays; }
+    public void setEstimatedDays(int estimatedDays) { this.estimatedDays = estimatedDays; }
 }

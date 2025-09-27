@@ -21,6 +21,9 @@ public class Bid {
 
     private int credits;
 
+    private int estimatedDays;
+
+
     private String description;
 
     // Getters & Setters
@@ -35,6 +38,16 @@ public class Bid {
 
     public int getCredits() { return credits; }
     public void setCredits(int credits) { this.credits = credits; }
+
+    public int getEstimatedDays() {
+        return estimatedDays;
+    }
+
+    public void setEstimatedDays(int estimatedDays) {
+        this.estimatedDays = estimatedDays;
+    }
+
+
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

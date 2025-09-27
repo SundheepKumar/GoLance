@@ -6,6 +6,7 @@ public class BidResponseDto {
     private String description;
     private Long bidderId;
     private String bidderName; // optional
+    private int estimatedDays;
 
     // getters & setters
     public Long getId() { return id; }
@@ -19,6 +20,14 @@ public class BidResponseDto {
 
     public Long getBidderId() { return bidderId; }
     public void setBidderId(Long bidderId) { this.bidderId = bidderId; }
+
+    public int getEstimatedDays() {
+        return estimatedDays;
+    }
+
+    public void setEstimatedDays(int estimatedDays) {
+        this.estimatedDays = estimatedDays;
+    }
 
     public String getBidderName() { return bidderName; }
     public void setBidderName(String bidderName) { this.bidderName = bidderName; }

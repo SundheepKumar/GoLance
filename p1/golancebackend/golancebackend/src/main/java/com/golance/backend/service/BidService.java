@@ -22,7 +22,7 @@ public class BidService {
     private UserRepository userRepository;
 
     // Place a bid
-    public Bid placeBid(Long taskId, Long userId, int credits, String description) {
+    public Bid placeBid(Long taskId, Long userId, int credits, String description, int estimatedDays) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
@@ -38,7 +38,9 @@ public class BidService {
         bid.setBidder(user);
         bid.setCredits(credits);
         bid.setDescription(description);
+        bid.setEstimatedDays(estimatedDays); // <--- NEW FIELD
 
         return bidRepository.save(bid);
     }
+
 }

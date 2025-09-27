@@ -36,10 +36,12 @@ public class BidController {
                 taskId,
                 bidRequest.getUserId(),
                 bidRequest.getCredits(),
-                bidRequest.getDescription()
+                bidRequest.getDescription(),
+                bidRequest.getEstimatedDays() // pass estimated days
         );
         return mapToResponse(bid);
     }
+
 
     // ------------------ GET ALL BIDS FOR A TASK ------------------
     @GetMapping("/tasks/{taskId}")
@@ -90,6 +92,15 @@ public class BidController {
     public Task allocateTask(@PathVariable Long taskId, @PathVariable Long bidId) {
         return taskService.allocateTask(taskId, bidId);
     }
+    // ------------------ GET ALL BIDS BY USER ------------------
+    @GetMapping("/user/{userId}")
+    public List<BidResponseDto> getBidsByUser(@PathVariable Long userId) {
+        List<Bid> bids = bidRepository.findByBidderId(userId);
+        return bids.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
 
     // ------------------ HELPER: Map Entity -> DTO ------------------
     private BidResponseDto mapToResponse(Bid bid) {
@@ -97,10 +108,12 @@ public class BidController {
         dto.setId(bid.getId());
         dto.setCredits(bid.getCredits());
         dto.setDescription(bid.getDescription());
+        dto.setEstimatedDays(bid.getEstimatedDays()); // <--- NEW
         if (bid.getBidder() != null) {
             dto.setBidderId(bid.getBidder().getId());
-            dto.setBidderName(bid.getBidder().getUsername()); // assuming User has getName()
+            dto.setBidderName(bid.getBidder().getUsername());
         }
         return dto;
     }
+
 }
