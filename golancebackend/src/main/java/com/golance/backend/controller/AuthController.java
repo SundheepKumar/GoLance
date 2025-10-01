@@ -46,7 +46,7 @@ public class AuthController {
 	                "email", userDetails.getAuthorities())
 	                // optionally add roles, email, etc.
 	            )
-	        );
+	        ;
 
 	        return ResponseEntity.ok(response);
 	        

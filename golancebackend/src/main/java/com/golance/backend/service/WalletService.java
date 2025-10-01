@@ -1,0 +1,65 @@
+package com.golance.backend.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.golance.backend.dto.RechargeRequestDto;
+import com.golance.backend.model.User;
+import com.golance.backend.model.Wallet;
+import com.golance.backend.repository.UserRepository;
+import com.golance.backend.repository.WalletRepository;
+
+@Service
+public class WalletService {
+	
+	@Autowired
+	private WalletRepository walletRepository;
+	
+	@Autowired
+	private UserRepository userRepository;
+	
+	@Autowired
+	private CreditTransactionService creditTransactionService;
+	
+	public Wallet getWallet(User user) {
+		return walletRepository.findByUser(user).orElseThrow(()-> new RuntimeException("Wallet not found"));
+	}
+	
+	public void recharge(RechargeRequestDto rechargeRequestDto) {
+		Long userId = rechargeRequestDto.getUserId();
+		int amount = rechargeRequestDto.getRechargeAmount();
+		
+		Wallet wallet = getWalletByUserId(userId);
+		wallet.setBalance(wallet.getBalance() + amount);
+		
+		walletRepository.save(wallet);
+		
+		//saving the transaction details(recharges details)
+		creditTransactionService.saveTransaction(wallet, amount, "RECHARGE", "RECHARGE_SELF");
+		
+	}
+	
+	public int getBalanceByUserId(Long userId) {
+	
+	    return getWalletByUserId(userId).getBalance();
+	}
+	
+	
+	public Wallet getWalletByUserId(Long userId) {
+		User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+		Wallet wallet = walletRepository.findByUser(user)
+	            .orElseGet(() -> {
+	                // If not found, create a new wallet
+	                Wallet newWallet = new Wallet();
+	                newWallet.setUser(user);
+	                newWallet.setBalance(0); // start with 0
+	                return newWallet;
+	            });
+		
+		return wallet;
+		
+	}
+
+}
