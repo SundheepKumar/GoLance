@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.golance.backend.dto.RechargeRequestDto;
+import com.golance.backend.dto.TransferRequestDto;
 import com.golance.backend.model.User;
 import com.golance.backend.service.UserService;
 import com.golance.backend.service.WalletService;
@@ -38,6 +39,10 @@ public class WalletController {
 		walletService.recharge(rechargeRequestDto);
 	}
 	
-	//COMPLETELY CHANGE THE CONTROLLER AND SERVICE. CONTROLLER POSSIBLY RETURNS VALUE GIVEN FROM SERVICE
-	//IT SHOULD NOT DO ANY COMPUTATION OR ANY OTHER WORK. PRESERVE SINGLE RESPONSIBILITY
+	@PostMapping("/transfer")
+	public void transferCredit(@RequestBody TransferRequestDto transferRequestDto) {
+		
+		walletService.transferCredit(transferRequestDto);
+		
+	}
 }

@@ -2,8 +2,10 @@ package com.golance.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.golance.backend.dto.RechargeRequestDto;
+import com.golance.backend.dto.TransferRequestDto;
 import com.golance.backend.model.CreditTransaction;
 import com.golance.backend.model.User;
 import com.golance.backend.model.Wallet;
@@ -73,6 +75,35 @@ public class WalletService {
 	    transaction.setDescription(description);
 	    
 	    creditTransactionRepository.save(transaction);
+	}
+
+	@Transactional
+	public void transferCredit(TransferRequestDto transferRequestDto) {
+		Long fromUserId = transferRequestDto.getFromUserId();
+		Long toUserId = transferRequestDto.getToUserId(); 
+		int transferAmount = transferRequestDto.getAmount();  //no of credits.
+		
+		Wallet fromUserWallet = getWalletByUserId(fromUserId);
+		Wallet toUserWallet = getWalletByUserId(toUserId);
+		
+		if(fromUserWallet.getBalance()<transferAmount)
+			 throw new RuntimeException("Insufficient credits");
+		
+		//transferring credits
+		fromUserWallet.setBalance(fromUserWallet.getBalance() - transferAmount);
+		toUserWallet.setBalance(toUserWallet.getBalance() + transferAmount);
+		
+		walletRepository.save(fromUserWallet);
+		walletRepository.save(toUserWallet);
+		
+		
+		
+		//saving the transaction.
+		String fromUsername = userRepository.findById(fromUserId).orElseThrow(()->new RuntimeException("User not found")).getUsername();
+		String toUsername = userRepository.findById(toUserId).orElseThrow(()->new RuntimeException("User not found")).getUsername();
+		saveWalletTransaction(fromUserWallet, -transferAmount, "TRANSFER", "TRANSFER TO " + toUsername);
+		saveWalletTransaction(toUserWallet, transferAmount, "TRANSFER", "TRANSFER FROM " + fromUsername);
+		
 	}
 
 }

@@ -16,7 +16,7 @@ public class CreditTransaction {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private int amount;
+	private int amount;  //amount refers to credits.
 	
 	private String type;
 	

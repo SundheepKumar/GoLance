@@ -14,7 +14,7 @@ public class Wallet {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	
-	private int balance = 0;
+	private int balance = 0;   //balance refers to credits 
 	
 	@OneToOne
 	@JoinColumn(name = "owner_id", nullable=false)
