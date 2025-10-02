@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.golance.backend.model.User;
+import com.golance.backend.repository.UserRepository;
 import com.golance.backend.security.JwtUtil;
 
 @RestController
@@ -27,6 +28,9 @@ public class AuthController {
 	@Autowired
 	private JwtUtil jwtUtil;
 	
+	@Autowired
+	private UserRepository userRepository;
+	
 	@SuppressWarnings("rawtypes")
 	@PostMapping("/login")
 	public ResponseEntity login(@RequestBody User user) {
@@ -36,14 +40,18 @@ public class AuthController {
 	        );
 
 	        UserDetails userDetails = (UserDetails) authentication.getPrincipal();    
-	        String token = jwtUtil.generateToken(userDetails);
+	        
+	        User userEntity = userRepository.findByUsername(userDetails.getUsername())
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+	        
+	        String token = jwtUtil.generateToken(userDetails, userEntity.getId());
 
 	        // return token + basic user info
 	        Map<String, Object> response = Map.of(
-	            "token", token,
+	            "token", token,   //token itself carries all necessary details
 	            "user", Map.of(
-	                "username", userDetails.getUsername(),
-	                "email", userDetails.getAuthorities())
+	                "username", userDetails.getUsername(),     //this is for frontend convenience like displaying welcome user.
+	                "roles", userDetails.getAuthorities())
 	                // optionally add roles, email, etc.
 	            )
 	        ;

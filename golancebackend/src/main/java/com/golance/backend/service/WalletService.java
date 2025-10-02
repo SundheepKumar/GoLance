@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.golance.backend.dto.RechargeRequestDto;
+import com.golance.backend.model.CreditTransaction;
 import com.golance.backend.model.User;
 import com.golance.backend.model.Wallet;
+import com.golance.backend.repository.CreditTransactionRepository;
 import com.golance.backend.repository.UserRepository;
 import com.golance.backend.repository.WalletRepository;
 
@@ -19,7 +21,7 @@ public class WalletService {
 	private UserRepository userRepository;
 	
 	@Autowired
-	private CreditTransactionService creditTransactionService;
+	private CreditTransactionRepository creditTransactionRepository;
 	
 	public Wallet getWallet(User user) {
 		return walletRepository.findByUser(user).orElseThrow(()-> new RuntimeException("Wallet not found"));
@@ -35,7 +37,7 @@ public class WalletService {
 		walletRepository.save(wallet);
 		
 		//saving the transaction details(recharges details)
-		creditTransactionService.saveTransaction(wallet, amount, "RECHARGE", "RECHARGE_SELF");
+		saveWalletTransaction(wallet, amount, "RECHARGE", "RECHARGE_SELF");
 		
 	}
 	
@@ -60,6 +62,17 @@ public class WalletService {
 		
 		return wallet;
 		
+	}
+	
+	public void saveWalletTransaction(Wallet wallet, int amount, String type, String description) {
+	    CreditTransaction transaction = new CreditTransaction(); //this is the entity
+	    
+	    transaction.setWallet(wallet);
+	    transaction.setAmount(amount);
+	    transaction.setType(type);
+	    transaction.setDescription(description);
+	    
+	    creditTransactionRepository.save(transaction);
 	}
 
 }

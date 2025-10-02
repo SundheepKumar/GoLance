@@ -39,16 +39,7 @@ public class CreditTransactionService {
 	}
 	
 	
-	public void saveTransaction(Wallet wallet, int amount, String type, String description) {
-	    CreditTransaction transaction = new CreditTransaction(); //this is the entity
-	    
-	    transaction.setWallet(wallet);
-	    transaction.setAmount(amount);
-	    transaction.setType(type);
-	    transaction.setDescription(description);
-	    
-	    creditTransactionRepository.save(transaction);
-	}
+	
 
 
 }
