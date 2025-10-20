@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import Header from "../Header";
 import { useNavigate } from "react-router-dom";
 
-const departments = ["CSE", "ECE", "ME", "EEE", "CE"];
-const years = [1, 2, 3, 4];
+const departments = ["MIS", "MIC", "MID", "BTech", "MCA", "MBA"];
+const years = ["1", "2", "3", "4", "5"];
 const skillOptions = ["Web Dev", "Design", "Tutoring", "Writing", "Debugging"];
 
 export default function SignupScreen({ onSignup }) {
@@ -66,8 +66,8 @@ export default function SignupScreen({ onSignup }) {
           email: form.email,
           password: form.password,
           department: form.department,
-          year: form.year,
-         // skills: form.skills,
+          studyingYear: form.year,
+          skills: form.skills.join(", "),
         }),
       });
 

@@ -17,7 +17,7 @@ export default function TaskPage() {
   // Fetch all tasks
   const fetchTasks = async () => {
     try {
-      const data = await apiFetch("http://localhost:8080/api/tasks/all");
+      const data = await apiFetch("http://localhost:8080/api/tasks");
       setTasks(data);
     } catch (err) {
       setError(err.message);
