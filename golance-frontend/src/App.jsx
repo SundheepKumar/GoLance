@@ -6,6 +6,7 @@ import Home from "./Pages/Home.jsx";
 import Header from "./Components/Header";
 import Tasks from "./Pages/Tasks.jsx";
 import PostTaskPage from "./Pages/PostTaskPage";
+import MyTasksPage from "./Pages/MyTasksPage";
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/post-task" element={<PostTaskPage />} /> 
         <Route path="/tasks" element={<Tasks />} />
+        <Route path="/my-tasks" element={<MyTasksPage />} />
       </Routes>
     </Router>
   );

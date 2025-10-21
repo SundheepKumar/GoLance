@@ -12,14 +12,19 @@ export default function TaskPage() {
   const [bidAmount, setBidAmount] = useState("");
   const [bidDescription, setBidDescription] = useState("");
 
-  // Use the full user object stored during login
   const user = JSON.parse(sessionStorage.getItem("user"));
 
   // Fetch all tasks
   const fetchTasks = async () => {
     try {
       const data = await apiFetch("http://localhost:8080/api/tasks");
-      setTasks(data);
+
+      // Filter out tasks posted by the logged-in user
+      const filtered = data.filter(
+        (task) => task.postedBy?.id !== user?.id
+      );
+
+      setTasks(filtered);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -27,7 +32,7 @@ export default function TaskPage() {
     }
   };
 
-  // Fetch bids for a task
+  // Fetch bids for a specific task
   const fetchBids = async (taskId) => {
     try {
       const data = await apiFetch(`http://localhost:8080/api/bids/tasks/${taskId}`);
@@ -84,10 +89,14 @@ export default function TaskPage() {
 
   return (
     <div className="container my-5">
-      <h2 className="mb-4">All Tasks</h2>
+      <h2 className="mb-4">All Available Tasks</h2>
 
       {loading && <p>Loading tasks...</p>}
       {error && <div className="alert alert-danger">{error}</div>}
+
+      {tasks.length === 0 && !loading && (
+        <p>No available tasks right now — looks like you’ve posted them all! 😄</p>
+      )}
 
       <div className="row">
         {tasks.map((task) => (
@@ -113,7 +122,7 @@ export default function TaskPage() {
         ))}
       </div>
 
-      {/* Modal */}
+      {/* Modal for viewing details */}
       {selectedTask && (
         <div
           className="modal show d-block"
