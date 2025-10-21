@@ -50,7 +50,7 @@ public class TaskController {
     }
 
     // READ ALL
-    @GetMapping
+    @GetMapping()
     public List<Task> getAllTasks() {
         return taskService.getAllTasks();
     }

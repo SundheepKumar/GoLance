@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { apiFetch } from "../api"; // import helper
+import { apiFetch } from "../api";
 
 export default function TaskPage() {
   const [tasks, setTasks] = useState([]);
@@ -12,7 +12,8 @@ export default function TaskPage() {
   const [bidAmount, setBidAmount] = useState("");
   const [bidDescription, setBidDescription] = useState("");
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  // Use the full user object stored during login
+  const user = JSON.parse(sessionStorage.getItem("user"));
 
   // Fetch all tasks
   const fetchTasks = async () => {
@@ -41,14 +42,12 @@ export default function TaskPage() {
     fetchTasks();
   }, []);
 
-  // Open task details modal
   const handleViewDetails = (task) => {
     setSelectedTask(task);
     fetchBids(task.id);
     setShowBidForm(false);
   };
 
-  // Submit a bid
   const handleBidSubmit = async (e) => {
     e.preventDefault();
     if (!bidAmount || !bidDescription) return alert("Fill all fields");

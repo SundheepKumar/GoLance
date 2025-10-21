@@ -50,6 +50,7 @@ public class AuthController {
 	        Map<String, Object> response = Map.of(
 	            "token", token,   //token itself carries all necessary details
 	            "user", Map.of(
+	            	"id", userEntity.getId(),
 	                "username", userDetails.getUsername(),     //this is for frontend convenience like displaying welcome user.
 	                "roles", userDetails.getAuthorities())
 	                // optionally add roles, email, etc.

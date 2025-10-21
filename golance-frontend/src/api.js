@@ -1,21 +1,25 @@
-// src/api.js
+// api.js
 export async function apiFetch(url, options = {}) {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token"); // JWT from sessionStorage
+
   const headers = {
     "Content-Type": "application/json",
-    ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
 
-  const res = await fetch(url, { ...options, headers });
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`; // send JWT
+  }
+
+  const res = await fetch(url, {
+    ...options,
+    headers,
+  });
 
   if (!res.ok) {
     const errText = await res.text();
-    throw new Error(errText || "Request failed");
+    throw new Error(errText || "API request failed");
   }
-
-  // Handle empty responses (e.g., 204 No Content)
-  if (res.status === 204) return null;
 
   return res.json();
 }
