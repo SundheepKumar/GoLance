@@ -49,22 +49,23 @@ public class WalletService {
 	}
 	
 	
+	@Transactional
 	public Wallet getWalletByUserId(Long userId) {
-		User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+	    User user = userRepository.findById(userId)
+	            .orElseThrow(() -> new RuntimeException("User not found"));
 
-		Wallet wallet = walletRepository.findByUser(user)
+	    Wallet wallet = walletRepository.findByUser(user)
 	            .orElseGet(() -> {
-	                // If not found, create a new wallet
 	                Wallet newWallet = new Wallet();
 	                newWallet.setUser(user);
-	                newWallet.setBalance(0); // start with 0
-	                return newWallet;
+	                newWallet.setBalance(0);
+	                // Save immediately so it's no longer transient
+	                return walletRepository.save(newWallet);
 	            });
-		
-		return wallet;
-		
+
+	    return wallet;
 	}
+
 	
 	public void saveWalletTransaction(Wallet wallet, int amount, String type, String description) {
 	    CreditTransaction transaction = new CreditTransaction(); //this is the entity

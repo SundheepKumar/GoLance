@@ -1,7 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import golanceLogo from "../assets/golance_logo.png";
-import Header from "../Components/Header";
 
 const developers = [
   {
@@ -34,6 +33,18 @@ const developers = [
 ];
 
 export default function Home() {
+    const navigate = useNavigate();
+  const user = JSON.parse(sessionStorage.getItem("user"));
+
+  const handleClick = (path) => {
+    if (!user) {
+      alert("Please login first!"); // simple alert popup
+      navigate("/login"); // optional: redirect to login page
+    } else {
+      navigate(path);
+    }
+  };
+  
   return (
     <>
       <div>
@@ -53,9 +64,12 @@ export default function Home() {
                 Have a project, assignment, or idea? Post it and let campus
                 talent bring it to life.
               </p>
-              <Link className="btn btn-outline-primary mt-2" to="/post-task">
+              <button
+                className="btn btn-outline-primary mt-2"
+                onClick={() => handleClick("/post-task")}
+              >
                 + Post Task
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -73,13 +87,15 @@ export default function Home() {
                 Discover available tasks, place your bids, and earn credits for
                 your skills.
               </p>
-              <Link className="btn btn-outline-primary mt-2" to="/tasks">
+              <button
+                className="btn btn-outline-primary mt-2"
+                onClick={() => handleClick("/tasks")}
+              >
                 View details »
-              </Link>
+              </button>
             </div>
           </div>
 
-          {/* 🗂️ Replaced third button from your first code */}
           <div className="col-lg-4">
             <div className="text-center p-4 bg-white rounded-4 shadow-sm h-100">
               <img
@@ -94,9 +110,12 @@ export default function Home() {
                 View tasks you posted, bids you placed, and assignments you’re
                 working on.
               </p>
-              <Link className="btn btn-outline-primary mt-2" to="/my-tasks">
+              <button
+                className="btn btn-outline-primary mt-2"
+                onClick={() => handleClick("/my-tasks")}
+              >
                 View details »
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -178,8 +197,9 @@ export default function Home() {
         {/* 🧑‍💻 Message from Developers Section */}
         <div className="container my-5">
           <h2 className="text-center fw-bold mb-4 text-primary">
-            Message from the Developers
+            Message from the Developers 
           </h2>
+          <h3 className="text-center fw-bold mb-4 ">Team PS4</h3>
           <div className="row g-4 justify-content-center">
             {developers.map(({ name, avatar, message }) => (
               <div key={name} className="col-sm-6 col-md-4 col-lg-2 text-center">

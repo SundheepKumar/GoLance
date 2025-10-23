@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.golance.backend.dto.RechargeRequestDto;
 import com.golance.backend.dto.TransferRequestDto;
 import com.golance.backend.model.User;
+import com.golance.backend.model.Wallet;
 import com.golance.backend.service.UserService;
 import com.golance.backend.service.WalletService;
 
@@ -27,9 +28,14 @@ public class WalletController {
 	//read balance
 	@GetMapping("/balance/{userId}")
 	public int getBalance(@PathVariable Long userId) {
-		User user = userService.getUserById(userId);
-		return walletService.getWallet(user).getBalance();
+	    User user = userService.getUserById(userId);
+	    
+	    // getWalletByUserId already creates wallet if missing
+	    Wallet wallet = walletService.getWalletByUserId(userId);
+	    
+	    return wallet.getBalance();
 	}
+
 	
 	//update balance - since post is not idempotent we use POST here, which is required for recharge
 	//multiple recharge requests should update the balance

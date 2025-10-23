@@ -77,7 +77,7 @@ export default function SignupScreen({ onSignup }) {
 
       const data = await res.json();
       onSignup && onSignup(data);
-      navigate("/", { state: { signupSuccess: true } });  //root url /login
+      navigate("/login", { state: { signupSuccess: true } });  //root url /login
     } catch (err) {
       setError(err.message);
     }

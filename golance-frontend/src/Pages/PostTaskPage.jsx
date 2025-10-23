@@ -42,7 +42,7 @@ export default function PostTaskPage() {
       body: JSON.stringify(payload),
     });
     alert("Task posted successfully!");
-    navigate("/tasks"); // redirect to tasks page
+    navigate("/my-tasks"); // redirect to tasks page
   } catch (err) {
     setError(err.message);
   }

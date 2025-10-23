@@ -7,7 +7,8 @@ import Header from "./Components/Header";
 import Tasks from "./Pages/Tasks.jsx";
 import PostTaskPage from "./Pages/PostTaskPage";
 import MyTasksPage from "./Pages/MyTasksPage";
-
+import ProfilePage from "./Pages/ProfilePage";
+import WalletPage from "./Pages/WalletPage";
 
 function App() {
   // Initialize user from sessionStorage if available
@@ -25,12 +26,15 @@ function App() {
     <Router>
       <Header user={user} onLogout={handleLogout} />
       <Routes>
-        <Route path="/" element={<Login onLogin={(user) => setUser(user)} />} />
+        <Route path="/login" element={<Login onLogin={(user) => setUser(user)} />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
         <Route path="/post-task" element={<PostTaskPage />} /> 
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/my-tasks" element={<MyTasksPage />} />
+        <Route path="/profile/:id" element={<ProfilePage />} />
+        <Route path="/wallet" element={<WalletPage />} />
       </Routes>
     </Router>
   );
