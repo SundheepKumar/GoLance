@@ -9,6 +9,7 @@ import PostTaskPage from "./Pages/PostTaskPage";
 import MyTasksPage from "./Pages/MyTasksPage";
 import ProfilePage from "./Pages/ProfilePage";
 import WalletPage from "./Pages/WalletPage";
+import MessagePage from "./Pages/MessagePage";
 
 function App() {
   // Initialize user from sessionStorage if available
@@ -33,6 +34,7 @@ function App() {
         <Route path="/post-task" element={<PostTaskPage />} /> 
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/my-tasks" element={<MyTasksPage />} />
+        <Route path ="/messages" element={<MessagePage user={user} />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/wallet" element={<WalletPage />} />
       </Routes>

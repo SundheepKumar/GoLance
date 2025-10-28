@@ -13,63 +13,89 @@ export default function Header({ user, onLogout }) {
 
   return (
     <header>
-      <nav className="navbar navbar-expand-lg shadow-sm" style={{ backgroundColor: "#0d6efd" }}>
+      <nav
+        className="navbar navbar-expand-lg shadow-sm"
+        style={{ backgroundColor: "#0d6efd" }}
+      >
         <div className="container-fluid">
-          <Link className="navbar-brand d-flex align-items-center text-white" to="/home">
-            <img src={golanceLogo} alt="golance logo" height="40" className="me-2" />
+          {/* Brand */}
+          <Link
+            className="navbar-brand d-flex align-items-center text-white"
+            to="/home"
+          >
+            <img
+              src={golanceLogo}
+              alt="golance logo"
+              height="40"
+              className="me-2"
+            />
             <span className="fw-bold fs-5">GoLance</span>
           </Link>
 
-          <div className="ms-auto d-flex align-items-center">
+          {/* Right section */}
+          <div className="ms-auto d-flex align-items-center gap-3">
             {user ? (
-              <div className="position-relative">
+              <>
+                {/* 💬 Message Icon */}
                 <div
-                  className="d-flex align-items-center text-white"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="text-white"
+                  style={{ cursor: "pointer", fontSize: "1.5rem" }}
+                  onClick={() => navigate("/messages")}
+                  title="Messages"
                 >
-                  <span className="fw-semibold me-2">{user.username}</span>
-                  <img
-                    src={`https://ui-avatars.com/api/?name=${user.username}&background=0d6efd&color=fff`}
-                    alt="avatar"
-                    className="rounded-circle border border-light"
-                    style={{ width: 36, height: 36 }}
-                  />
+                  <i className="bi bi-chat-dots-fill"></i>
                 </div>
 
-                {dropdownOpen && (
+                {/* Profile Dropdown */}
+                <div className="position-relative">
                   <div
-                    className="position-absolute end-0 mt-2 bg-white rounded-3 shadow p-2"
-                    style={{ minWidth: "160px", zIndex: 1000 }}
+                    className="d-flex align-items-center text-white"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
                   >
-                    <button
-                      className="dropdown-item text-start"
-                      onClick={() => {
-                        navigate(`/profile/${user.id}`);
-                        setDropdownOpen(false);
-                      }}
-                    >
-                      👤 My Profile
-                    </button>
-                    <button
-                      className="dropdown-item text-start"
-                      onClick={() => {
-                        navigate("/wallet");
-                        setDropdownOpen(false);
-                      }}
-                    >
-                      💰 My Wallet
-                    </button>
-                    <hr className="my-2" />
-                    <button
-                      className="dropdown-item text-danger text-start"
-                      onClick={handleLogout}
-                    >
-                      🚪 Logout
-                    </button>
+                    <span className="fw-semibold me-2">{user.username}</span>
+                    <img
+                      src={`https://ui-avatars.com/api/?name=${user.username}&background=0d6efd&color=fff`}
+                      alt="avatar"
+                      className="rounded-circle border border-light"
+                      style={{ width: 36, height: 36 }}
+                    />
                   </div>
-                )}
-              </div>
+
+                  {dropdownOpen && (
+                    <div
+                      className="position-absolute end-0 mt-2 bg-white rounded-3 shadow p-2"
+                      style={{ minWidth: "160px", zIndex: 1000 }}
+                    >
+                      <button
+                        className="dropdown-item text-start"
+                        onClick={() => {
+                          navigate(`/profile/${user.id}`);
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        👤 My Profile
+                      </button>
+                      <button
+                        className="dropdown-item text-start"
+                        onClick={() => {
+                          navigate("/wallet");
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        💰 My Wallet
+                      </button>
+                      <hr className="my-2" />
+                      <button
+                        className="dropdown-item text-danger text-start"
+                        onClick={handleLogout}
+                      >
+                        🚪 Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
             ) : (
               <Link
                 to="/login"
