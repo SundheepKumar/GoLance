@@ -40,7 +40,14 @@ export default function Header({ user, onLogout }) {
                 <div
                   className="text-white"
                   style={{ cursor: "pointer", fontSize: "1.5rem" }}
-                  onClick={() => navigate("/messages")}
+                  onClick={() => {
+                    if (!user) {
+                      alert("⚠️ Please login first to view messages!");
+                      navigate("/login");
+                    } else {
+                      navigate("/messages");
+                    }
+                  }}
                   title="Messages"
                 >
                   <i className="bi bi-chat-dots-fill"></i>
@@ -99,6 +106,9 @@ export default function Header({ user, onLogout }) {
             ) : (
               <Link
                 to="/login"
+                onClick={() => {
+                  sessionStorage.clear();
+                }}
                 className="btn btn-light rounded-pill px-4 py-1 fw-semibold shadow-sm"
               >
                 Login
