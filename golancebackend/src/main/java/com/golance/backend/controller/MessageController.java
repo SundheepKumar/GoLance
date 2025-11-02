@@ -80,6 +80,26 @@ public class MessageController {
         }).toList();
     }
 
+    	
+    @PostMapping("/start")
+    public ResponseEntity<User> startChat(@RequestBody MessageRequestDto dto) {
+        User sender = userRepository.findById(dto.getSenderId())
+                .orElseThrow(() -> new RuntimeException("Sender not found"));
+        User receiver = userRepository.findById(dto.getReceiverId())
+                .orElseThrow(() -> new RuntimeException("Receiver not found"));
+
+        // Check if they already have any messages exchanged
+        boolean chatExists = messageService.existsBetweenUsers(sender, receiver);
+
+        // If chat doesn't exist, create a dummy "chat-start" entry (optional)
+        if (!chatExists) {
+            messageService.createEmptyConversation(sender, receiver);
+        }
+
+        // return receiver info so frontend can navigate
+        return ResponseEntity.ok(receiver);
+    }
+
 	
 	
 

@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { Button, Modal, Form } from "react-bootstrap";
-import { apiFetch } from "../api"; // optional helper
+import { Button, Modal } from "react-bootstrap";
 
 export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editTask, setEditTask] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTaskId, setDeleteTaskId] = useState(null);
   const [selectedTaskBids, setSelectedTaskBids] = useState([]);
@@ -14,6 +11,8 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
   const [showCreditTransferModal, setShowCreditTransferModal] = useState(false);
   const [transferAmount, setTransferAmount] = useState(0);
   const [transferToUserId, setTransferToUserId] = useState(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileData, setProfileData] = useState(null);
 
   const user = JSON.parse(sessionStorage.getItem("user"));
   const token = sessionStorage.getItem("token");
@@ -21,45 +20,6 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
   const headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
-  };
-
-  // ---------- Edit Task ----------
-  const handleEditClick = (task) => {
-    setEditTask({
-      id: task.id,
-      title: task.title || "",
-      description: task.description || "",
-      category: task.category || "",
-      creditsOffered: task.creditsOffered || 0,
-      deadline: task.deadline ? task.deadline.split("T")[0] : "",
-    });
-    setShowEditModal(true);
-  };
-
-  const handleEditChange = (e) =>
-    setEditTask({ ...editTask, [e.target.name]: e.target.value });
-
-  const saveEdit = async () => {
-    if (!editTask) return;
-    try {
-      await fetch(`http://localhost:8080/api/tasks/${editTask.id}`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify({
-          title: editTask.title,
-          description: editTask.description,
-          category: editTask.category,
-          creditsOffered: Number(editTask.creditsOffered),
-          deadline: editTask.deadline,
-        }),
-      });
-      alert("Task updated successfully!");
-      setShowEditModal(false);
-      fetchTasks();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to update task: " + err.message);
-    }
   };
 
   // ---------- Delete Task ----------
@@ -87,9 +47,12 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
   // ---------- View Bids ----------
   const handleViewBids = async (taskId) => {
     try {
-      const res = await fetch(`http://localhost:8080/api/bids/tasks/${taskId}`, {
-        headers,
-      });
+      const res = await fetch(
+        `http://localhost:8080/api/bids/tasks/${taskId}`,
+        {
+          headers,
+        }
+      );
       const data = await res.json();
       setSelectedTaskBids(data.map((b) => ({ ...b, taskId })));
       setShowBidsModal(true);
@@ -108,7 +71,9 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
       );
       const updatedTask = await res.json();
       alert(`Bid allocated to ${bid.bidderName} successfully!`);
-      setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+      setTasks((prev) =>
+        prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
+      );
       setShowBidsModal(false);
       fetchTasks();
     } catch (err) {
@@ -172,6 +137,47 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
     }
   };
 
+  // ---------- View Profile ----------
+  // ---------- View Profile ----------
+  const handleViewProfile = async (userId) => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/users/${userId}`, {
+        headers,
+      });
+      const data = await res.json();
+      setProfileData(data);
+      setShowProfileModal(true);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch profile: " + err.message);
+    }
+  };
+
+  // ---------- Message User ----------
+  const handleMessageUser = async (userId) => {
+    const currentUser = JSON.parse(sessionStorage.getItem("user"));
+    if (!currentUser) return alert("You must be logged in to message.");
+
+    try {
+      // 👇 Make sure chat exists (backend will ignore if it already does)
+      await fetch("http://localhost:8080/api/messages/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          senderId: currentUser.id,
+          receiverId: userId,
+        }),
+      });
+
+      // Save for MessagePage and navigate
+      sessionStorage.setItem("chatWithUserId", userId);
+      window.location.href = "/messages";
+    } catch (err) {
+      console.error("Failed to start chat:", err);
+      alert("Unable to start chat right now.");
+    }
+  };
+
   return (
     <>
       {/* Table */}
@@ -188,14 +194,20 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
               <th>View Bids / Assigned</th>
               <th>Review Work</th>
               <th>Delete Task</th>
-              <th>Edit</th>
             </tr>
           </thead>
           <tbody>
             {tasks.map((task) => (
               <tr key={task.id}>
                 <td>{task.title}</td>
-                <td style={{ maxWidth: 250, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <td
+                  style={{
+                    maxWidth: 250,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
                   {task.description}
                 </td>
                 <td>{task.category}</td>
@@ -204,18 +216,63 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
                 <td>{task.status}</td>
 
                 <td>
-                  {task.status === "ALLOCATED" || task.status === "IN_PROGRESS" ? (
-                    <span>Assigned to: {task.assignedUserName || task.assignedUser?.username || "—"}</span>
+                  {task.status === "COMPLETED" ? (
+                    <span>Task completed ✅</span>
+                  ) : task.status === "ALLOCATED" ||
+                    task.status === "IN_PROGRESS" ? (
+                    <div>
+                      <span>
+                        Assigned to:{" "}
+                        {task.assignedUserName ||
+                          task.assignedUser?.username ||
+                          "—"}
+                      </span>
+                      <div className="mt-2 d-flex flex-column justify-content-center align-items-center">
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          className="me-2"
+                          onClick={() =>
+                            handleViewProfile(
+                              task.assignedUserId || task.assignedUser?.id
+                            )
+                          }
+                        >
+                          View Profile
+                        </Button>
+                        <Button
+                          className="mt-2"
+                          variant="outline-success"
+                          size="sm"
+                          onClick={() =>
+                            handleMessageUser(
+                              task.assignedUserId || task.assignedUser?.id
+                            )
+                          }
+                        >
+                          Message
+                        </Button>
+                      </div>
+                    </div>
                   ) : (
-                    <Button variant="info" size="sm" onClick={() => handleViewBids(task.id)}>
+                    <Button
+                      variant="info"
+                      size="sm"
+                      onClick={() => handleViewBids(task.id)}
+                    >
                       View Bids
                     </Button>
                   )}
                 </td>
 
                 <td>
-                  {task.status === "IN_PROGRESS" || task.status === "PENDING" ? (
-                    <Button variant="primary" size="sm" onClick={() => handleReviewClick(task)}>
+                  {task.status === "IN_PROGRESS" ||
+                  task.status === "PENDING" ? (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => handleReviewClick(task)}
+                    >
                       Review Work
                     </Button>
                   ) : (
@@ -225,18 +282,16 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
 
                 <td>
                   {task.status === "OPEN" || task.status === "PENDING" ? (
-                    <Button variant="danger" size="sm" onClick={() => handleDeleteClick(task.id)}>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleDeleteClick(task.id)}
+                    >
                       Delete
                     </Button>
                   ) : (
                     <span>Assigned task cannot be deleted</span>
                   )}
-                </td>
-
-                <td>
-                  <Button variant="secondary" size="sm" onClick={() => handleEditClick(task)}>
-                    Edit
-                  </Button>
                 </td>
               </tr>
             ))}
@@ -245,7 +300,11 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
       </div>
 
       {/* Review Work Modal */}
-      <Modal show={showReviewModal} onHide={() => setShowReviewModal(false)} centered>
+      <Modal
+        show={showReviewModal}
+        onHide={() => setShowReviewModal(false)}
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title>Review Work</Modal.Title>
         </Modal.Header>
@@ -254,9 +313,14 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
             <>
               <h5>{reviewTask.title}</h5>
               <p>{reviewTask.description}</p>
-              {/* You can add a file viewer or submission text here if backend stores it */}
-              <div style={{ minHeight: 100, border: "1px solid #eee", padding: 10, marginTop: 12 }}>
-                {/* placeholder for submission preview */}
+              <div
+                style={{
+                  minHeight: 100,
+                  border: "1px solid #eee",
+                  padding: 10,
+                  marginTop: 12,
+                }}
+              >
                 <em>Submission preview (if available)</em>
               </div>
             </>
@@ -265,10 +329,16 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="success" onClick={() => updateStatus(reviewTask.id, "COMPLETED")}>
+          <Button
+            variant="success"
+            onClick={() => updateStatus(reviewTask.id, "COMPLETED")}
+          >
             Accept
           </Button>
-          <Button variant="warning" onClick={() => updateStatus(reviewTask.id, "IN_PROGRESS")}>
+          <Button
+            variant="warning"
+            onClick={() => updateStatus(reviewTask.id, "IN_PROGRESS")}
+          >
             Request Revision
           </Button>
           <Button variant="secondary" onClick={() => setShowReviewModal(false)}>
@@ -278,18 +348,31 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
       </Modal>
 
       {/* Credit Transfer Modal */}
-      <Modal show={showCreditTransferModal} onHide={() => setShowCreditTransferModal(false)} centered>
+      <Modal
+        show={showCreditTransferModal}
+        onHide={() => setShowCreditTransferModal(false)}
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title>Transfer Credits</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p>
             You are about to send <strong>{transferAmount}</strong> credits to{" "}
-            <strong>{tasks.find((t) => (t.assignedUserId || t.assignedUser?.id) === transferToUserId)?.assignedUserName || "User"}</strong>.
+            <strong>
+              {tasks.find(
+                (t) =>
+                  (t.assignedUserId || t.assignedUser?.id) === transferToUserId
+              )?.assignedUserName || "User"}
+            </strong>
+            .
           </p>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCreditTransferModal(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowCreditTransferModal(false)}
+          >
             Cancel
           </Button>
           <Button variant="success" onClick={handleCreditTransfer}>
@@ -298,52 +381,39 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
         </Modal.Footer>
       </Modal>
 
-      {/* Edit Task Modal (status removed) */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Task</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            {["title", "description", "category", "creditsOffered", "deadline"].map((field) => (
-              <Form.Group key={field} className="mb-3">
-                <Form.Label className="text-capitalize">{field}</Form.Label>
-                <Form.Control
-                  type={field === "creditsOffered" ? "number" : field === "deadline" ? "date" : "text"}
-                  name={field}
-                  value={editTask?.[field] ?? ""}
-                  onChange={handleEditChange}
-                />
-              </Form.Group>
-            ))}
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancel</Button>
-          <Button variant="success" onClick={saveEdit}>Save</Button>
-        </Modal.Footer>
-      </Modal>
-
       {/* Delete Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+      <Modal
+        show={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
         <Modal.Body>Are you sure you want to delete this task?</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
-          <Button variant="danger" onClick={confirmDelete}>Delete</Button>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmDelete}>
+            Delete
+          </Button>
         </Modal.Footer>
       </Modal>
 
       {/* Bids Modal */}
-      <Modal show={showBidsModal} onHide={() => setShowBidsModal(false)} size="lg" centered>
+      <Modal
+        show={showBidsModal}
+        onHide={() => setShowBidsModal(false)}
+        size="lg"
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title>Bids for Task</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedTaskBids.length > 0 ? (
-            <table className="table table-bordered text-center">
+            <table className="table table-bordered text-center align-middle">
               <thead>
                 <tr>
                   <th>Bidder</th>
@@ -356,15 +426,53 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
               <tbody>
                 {selectedTaskBids.map((bid) => (
                   <tr key={bid.id}>
-                    <td>{bid.bidderName}</td>
+                    <td>
+                      <div>{bid.bidderName}</div>
+                      <div className="mt-2">
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          className="me-2"
+                          onClick={() => handleViewProfile(bid.bidderId)}
+                        >
+                          View Profile
+                        </Button>
+                        <Button
+                          variant="outline-success"
+                          size="sm"
+                          onClick={() => handleMessageUser(bid.bidderId)}
+                        >
+                          Message
+                        </Button>
+                      </div>
+                    </td>
                     <td>{bid.credits}</td>
-                    <td>{bid.description}</td>
+                    <td
+                      style={{
+                        maxWidth: 250,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {bid.description}
+                    </td>
                     <td>{bid.estimatedDays || "—"}</td>
                     <td>
-                      {tasks.find((t) => t.id === bid.taskId)?.status === "ALLOCATED" ? (
-                        <span>Assigned to: {tasks.find((t) => t.id === bid.taskId)?.assignedUserName || "—"}</span>
+                      {tasks.find((t) => t.id === bid.taskId)?.status ===
+                      "ALLOCATED" ? (
+                        <span>
+                          Assigned to:{" "}
+                          {tasks.find((t) => t.id === bid.taskId)
+                            ?.assignedUserName || "—"}
+                        </span>
                       ) : (
-                        <Button variant="success" size="sm" onClick={() => handleSelectBid(bid)}>Select</Button>
+                        <Button
+                          variant="success"
+                          size="sm"
+                          onClick={() => handleSelectBid(bid)}
+                        >
+                          Select
+                        </Button>
                       )}
                     </td>
                   </tr>
@@ -376,7 +484,51 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowBidsModal(false)}>Close</Button>
+          <Button variant="secondary" onClick={() => setShowBidsModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      {/* Profile Modal */}
+      <Modal
+        show={showProfileModal}
+        onHide={() => setShowProfileModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>User Profile</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {profileData ? (
+            <div className="text-start">
+              <p>
+                <strong>Name:</strong> {profileData.username}
+              </p>
+              <p>
+                <strong>Email:</strong> {profileData.email}
+              </p>
+              {profileData.credits !== undefined && (
+                <p>
+                  <strong>Credits:</strong> {profileData.credits}
+                </p>
+              )}
+              {profileData.bio && (
+                <p>
+                  <strong>About:</strong> {profileData.bio}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p>Loading profile...</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowProfileModal(false)}
+          >
+            Close
+          </Button>
         </Modal.Footer>
       </Modal>
     </>

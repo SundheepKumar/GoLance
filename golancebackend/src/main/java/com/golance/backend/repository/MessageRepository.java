@@ -35,6 +35,9 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 			    WHERE m.receiver.id = :userId
 			""")
 			List<User> findChatContacts(@Param("userId") Long userId);
+	  
+	  boolean existsBySenderAndReceiverOrReceiverAndSender(User sender, User receiver, User receiver2, User sender2);
+
 
 
 }

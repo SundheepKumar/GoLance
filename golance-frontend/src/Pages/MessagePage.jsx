@@ -144,6 +144,18 @@ const MessagePage = () => {
     return () => clearInterval(interval);
   }, [selectedContact, currentUser]);
 
+  useEffect(() => {
+  const chatWithUserId = sessionStorage.getItem("chatWithUserId");
+  if (chatWithUserId && contacts.length > 0) {
+    const contactToChat = contacts.find((c) => c.id === Number(chatWithUserId));
+    if (contactToChat) {
+      setSelectedContact(contactToChat);
+      sessionStorage.removeItem("chatWithUserId");
+    }
+  }
+}, [contacts]);
+
+
   // Send message
   const handleSend = (e) => {
     e.preventDefault();

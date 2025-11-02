@@ -14,14 +14,14 @@ export default function TaskPage() {
 
   const user = JSON.parse(sessionStorage.getItem("user"));
 
-  // Fetch all tasks
+  // Fetch all open tasks (not posted by the current user)
   const fetchTasks = async () => {
     try {
       const data = await apiFetch("http://localhost:8080/api/tasks");
 
-      // Filter out tasks posted by the logged-in user
+      // ✅ Show only OPEN tasks not posted by current user
       const filtered = data.filter(
-        (task) => task.postedBy?.id !== user?.id
+        (task) => task.postedBy?.id !== user?.id && task.status === "OPEN"
       );
 
       setTasks(filtered);
@@ -89,24 +89,26 @@ export default function TaskPage() {
 
   return (
     <div className="container my-5">
-      <h2 className="mb-4">All Available Tasks</h2>
+      <h2 className="mb-3">Open Tasks</h2>
+      <p className="text-muted mb-4">
+        Showing only tasks that are currently open for bidding.
+      </p>
 
       {loading && <p>Loading tasks...</p>}
       {error && <div className="alert alert-danger">{error}</div>}
 
       {tasks.length === 0 && !loading && (
-        <p>No available tasks right now — looks like you’ve posted them all! 😄</p>
+        <p>No open tasks available at the moment. Check back soon! 🚀</p>
       )}
 
       <div className="row">
         {tasks.map((task) => (
           <div key={task.id} className="col-md-4 mb-3">
-            <div className="card h-100">
+            <div className="card h-100 shadow-sm">
               <div className="card-body">
                 <h5 className="card-title">{task.title}</h5>
                 <p><strong>Category:</strong> {task.category}</p>
                 <p><strong>Credits:</strong> {task.creditsOffered}</p>
-                <p><strong>Status:</strong> {task.status}</p>
                 <p><strong>Deadline:</strong> {task.deadline}</p>
                 <p><strong>Posted By:</strong> {task.postedBy?.username || "N/A"}</p>
 
@@ -152,7 +154,7 @@ export default function TaskPage() {
                     className="btn btn-success mb-3 mt-2"
                     onClick={() => setShowBidForm(true)}
                   >
-                    Bid
+                    Place a Bid
                   </button>
                 )}
 

@@ -49,5 +49,19 @@ public class MessageService {
 	     return messageRepository.findChatContacts(userId);
 	 
 	}
+	 
+	 public boolean existsBetweenUsers(User u1, User u2) {
+		    return messageRepository.existsBySenderAndReceiverOrReceiverAndSender(u1, u2, u1, u2);
+		}
+
+		public void createEmptyConversation(User sender, User receiver) {
+		    Message placeholder = new Message();
+		    placeholder.setSender(sender);
+		    placeholder.setReceiver(receiver);
+		    placeholder.setContent(""); // or "[Chat Started]"
+		    placeholder.setReadStatus(true);
+		    messageRepository.save(placeholder);
+		}
+
 	
 }
