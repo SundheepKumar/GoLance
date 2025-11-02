@@ -11,19 +11,16 @@ export default function TaskPage() {
   const [showBidForm, setShowBidForm] = useState(false);
   const [bidAmount, setBidAmount] = useState("");
   const [bidDescription, setBidDescription] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const user = JSON.parse(sessionStorage.getItem("user"));
 
-  // Fetch all open tasks (not posted by the current user)
   const fetchTasks = async () => {
     try {
       const data = await apiFetch("http://localhost:8080/api/tasks");
-
-      // ✅ Show only OPEN tasks not posted by current user
       const filtered = data.filter(
         (task) => task.postedBy?.id !== user?.id && task.status === "OPEN"
       );
-
       setTasks(filtered);
     } catch (err) {
       setError(err.message);
@@ -32,10 +29,11 @@ export default function TaskPage() {
     }
   };
 
-  // Fetch bids for a specific task
   const fetchBids = async (taskId) => {
     try {
-      const data = await apiFetch(`http://localhost:8080/api/bids/tasks/${taskId}`);
+      const data = await apiFetch(
+        `http://localhost:8080/api/bids/tasks/${taskId}`
+      );
       setBids(data);
     } catch (err) {
       console.error(err);
@@ -55,10 +53,20 @@ export default function TaskPage() {
 
   const handleBidSubmit = async (e) => {
     e.preventDefault();
-    if (!bidAmount || !bidDescription) return alert("Fill all fields");
+    if (!bidAmount || !bidDescription) return alert("Please fill all fields.");
 
     if (Number(bidAmount) > selectedTask.creditsOffered) {
-      return alert(`Bid cannot exceed ${selectedTask.creditsOffered} credits`);
+      return alert(`Bid cannot exceed ${selectedTask.creditsOffered} credits.`);
+    }
+
+    // ✅ Check if this user already placed a bid for this task
+    const alreadyBid = bids.some(
+      (b) =>
+        b.userId === user.id ||
+        b.bidderId === user.id // for backend naming consistency
+    );
+    if (alreadyBid) {
+      return alert("You have already placed a bid for this task.");
     }
 
     const payload = {
@@ -76,16 +84,29 @@ export default function TaskPage() {
         }
       );
 
+      // Append new bid and show success
       setBids((prev) => [...prev, newBid]);
       setBidAmount("");
       setBidDescription("");
       setShowBidForm(false);
-      alert("Bid placed successfully!");
+      setShowSuccessModal(true);
     } catch (err) {
       console.error("Error placing bid:", err);
       alert("Error placing bid: " + err.message);
     }
   };
+
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false);
+  };
+
+  // ✅ Clean helper function
+  const hasUserBid = (taskId) =>
+    bids.some(
+      (b) =>
+        (b.userId === user.id || b.bidderId === user.id) &&
+        selectedTask?.id === taskId
+    );
 
   return (
     <div className="container my-5">
@@ -104,16 +125,24 @@ export default function TaskPage() {
       <div className="row">
         {tasks.map((task) => (
           <div key={task.id} className="col-md-4 mb-3">
-            <div className="card h-100 shadow-sm">
+            <div className="card h-100 shadow-sm border-1 rounded-3">
               <div className="card-body">
-                <h5 className="card-title">{task.title}</h5>
-                <p><strong>Category:</strong> {task.category}</p>
-                <p><strong>Credits:</strong> {task.creditsOffered}</p>
-                <p><strong>Deadline:</strong> {task.deadline}</p>
-                <p><strong>Posted By:</strong> {task.postedBy?.username || "N/A"}</p>
+                <h5 className="card-title fw-semibold">{task.title}</h5>
+                <p>
+                  <strong>Category:</strong> {task.category}
+                </p>
+                <p>
+                  <strong>Credits:</strong> {task.creditsOffered}
+                </p>
+                <p>
+                  <strong>Deadline:</strong> {task.deadline}
+                </p>
+                <p>
+                  <strong>Posted By:</strong> {task.postedBy?.username || "N/A"}
+                </p>
 
                 <button
-                  className="btn btn-primary mt-2"
+                  className="btn btn-primary mt-2 w-100"
                   onClick={() => handleViewDetails(task)}
                 >
                   View Details
@@ -124,7 +153,7 @@ export default function TaskPage() {
         ))}
       </div>
 
-      {/* Modal for viewing details */}
+      {/* Task Details Modal */}
       {selectedTask && (
         <div
           className="modal show d-block"
@@ -132,9 +161,11 @@ export default function TaskPage() {
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
         >
           <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content">
+            <div className="modal-content border-0 shadow rounded-3">
               <div className="modal-header">
-                <h5 className="modal-title">{selectedTask.title}</h5>
+                <h5 className="modal-title fw-semibold">
+                  {selectedTask.title}
+                </h5>
                 <button
                   type="button"
                   className="btn-close"
@@ -142,26 +173,44 @@ export default function TaskPage() {
                 ></button>
               </div>
               <div className="modal-body text-dark">
-                <p><strong>Category:</strong> {selectedTask.category}</p>
-                <p><strong>Description:</strong> {selectedTask.description}</p>
-                <p><strong>Credits:</strong> {selectedTask.creditsOffered}</p>
-                <p><strong>Status:</strong> {selectedTask.status}</p>
-                <p><strong>Deadline:</strong> {selectedTask.deadline}</p>
-                <p><strong>Posted By:</strong> {selectedTask.postedBy?.username || "N/A"}</p>
+                <p>
+                  <strong>Category:</strong> {selectedTask.category}
+                </p>
+                <p>
+                  <strong>Description:</strong> {selectedTask.description}
+                </p>
+                <p>
+                  <strong>Credits:</strong> {selectedTask.creditsOffered}
+                </p>
+                <p>
+                  <strong>Status:</strong> {selectedTask.status}
+                </p>
+                <p>
+                  <strong>Deadline:</strong> {selectedTask.deadline}
+                </p>
+                <p>
+                  <strong>Posted By:</strong>{" "}
+                  {selectedTask.postedBy?.username || "N/A"}
+                </p>
 
-                {!showBidForm && (
+                {/* ✅ Disable bid form if user already placed a bid */}
+                {hasUserBid(selectedTask.id) ? (
+                  <div className="alert alert-warning mt-3">
+                    ⚠️ You have already placed a bid for this task.
+                  </div>
+                ) : !showBidForm ? (
                   <button
                     className="btn btn-success mb-3 mt-2"
                     onClick={() => setShowBidForm(true)}
                   >
                     Place a Bid
                   </button>
-                )}
-
-                {showBidForm && (
+                ) : (
                   <form onSubmit={handleBidSubmit} className="mb-3">
                     <div className="mb-2">
-                      <label className="form-label">Bid Amount</label>
+                      <label className="form-label fw-semibold">
+                        Bid Amount
+                      </label>
                       <input
                         type="number"
                         className="form-control"
@@ -170,7 +219,9 @@ export default function TaskPage() {
                       />
                     </div>
                     <div className="mb-2">
-                      <label className="form-label">Description</label>
+                      <label className="form-label fw-semibold">
+                        Description
+                      </label>
                       <textarea
                         className="form-control"
                         value={bidDescription}
@@ -190,27 +241,70 @@ export default function TaskPage() {
                   </form>
                 )}
 
-                <h5>Previous Bids:</h5>
+                <h5 className="mt-4 fw-semibold text-secondary">Previous Bids</h5>
                 {bids.length === 0 ? (
-                  <p>No bids yet.</p>
+                  <p className="text-muted">No bids yet.</p>
                 ) : (
-                  <ul>
+                  <div className="row mt-3">
                     {bids.map((bid) => (
-                      <li key={bid.id}>
-                        <strong>Bidder:</strong> {bid.bidderName},{" "}
-                        <strong>Credits:</strong> {bid.credits},{" "}
-                        <strong>Description:</strong> {bid.description}
-                      </li>
+                      <div key={bid.id} className="col-md-6 mb-3">
+                        <div className="card border-0 shadow-sm rounded-3 h-100">
+                          <div className="card-body">
+                            <p className="mb-1">
+                              <strong>Bidder:</strong> {bid.bidderName}
+                            </p>
+                            <p className="mb-1">
+                              <strong>Credits:</strong> {bid.credits}
+                            </p>
+                            <p className="text-muted small mb-0">
+                              {bid.description || "No description provided"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 )}
               </div>
-              <div className="modal-footer">
+
+              <div className="modal-footer border-0">
                 <button
-                  className="btn btn-secondary"
+                  className="btn btn-outline-secondary"
                   onClick={() => setSelectedTask(null)}
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Success Modal */}
+      {showSuccessModal && (
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 rounded-4 shadow-lg">
+              <div className="p-4 text-center">
+                <div
+                  className="rounded-circle bg-success text-white mx-auto mb-3 d-flex align-items-center justify-content-center"
+                  style={{ width: "40px", height: "40px", fontSize: "2rem" }}
+                >
+                  ✓
+                </div>
+                <h4 className="mb-2">Bid Placed Successfully!</h4>
+                <p className="text-muted mb-4">
+                  Your bid has been submitted for this task.
+                </p>
+                <button
+                  className="btn btn-success px-4 fw-semibold rounded-3"
+                  onClick={handleCloseSuccessModal}
+                >
+                  OK
                 </button>
               </div>
             </div>

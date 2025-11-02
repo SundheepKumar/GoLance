@@ -183,7 +183,7 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
       {/* Table */}
       <div className="table-responsive">
         <table className="table table-bordered table-hover text-center">
-          <thead>
+          <thead className="table-primary">
             <tr>
               <th>Title</th>
               <th>Description</th>
@@ -242,7 +242,7 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
                         </Button>
                         <Button
                           className="mt-2"
-                          variant="outline-success"
+                          variant="outline-secondary"
                           size="sm"
                           onClick={() =>
                             handleMessageUser(

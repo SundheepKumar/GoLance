@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Modal, Button } from "react-bootstrap";
 import { apiFetch } from "../api";
 
 export default function PostTaskPage() {
@@ -10,55 +11,59 @@ export default function PostTaskPage() {
   const [category, setCategory] = useState("");
   const [creditsOffered, setCreditsOffered] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [status, setStatus] = useState("OPEN");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const user = JSON.parse(sessionStorage.getItem("user"));
 
-    const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
 
-  if (!title || !description || !category || !creditsOffered || !deadline) {
-    return setError("Please fill in all required fields.");
-  }
+    if (!title || !description || !category || !creditsOffered || !deadline) {
+      return setError("Please fill in all required fields.");
+    }
 
-  const payload = {
-    title,
-    description,
-    category,
-    creditsOffered: Number(creditsOffered),
-    deadline,
-    status: "OPEN", // ✅ always open
-    postedById: user.id,
+    const payload = {
+      title,
+      description,
+      category,
+      creditsOffered: Number(creditsOffered),
+      deadline,
+      status: "OPEN",
+      postedById: user.id,
+    };
+
+    setLoading(true);
+    try {
+      await apiFetch("http://localhost:8080/api/tasks", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      setShowSuccessModal(true);
+    } catch (err) {
+      setError(err.message);
+    }
+    setLoading(false);
   };
 
-  setLoading(true);
-  try {
-    await apiFetch("http://localhost:8080/api/tasks", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    alert("Task posted successfully!");
-    navigate("/my-tasks"); // redirect to tasks page
-  } catch (err) {
-    setError(err.message);
-  }
-  setLoading(false);
-};
-
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    navigate("/my-tasks");
+  };
 
   return (
     <div className="container my-5">
       <div className="row justify-content-center">
         <div className="col-lg-8">
-          <div className="card p-4 shadow rounded-4 bg-white">
+          <div className="card p-4 shadow rounded-4 bg-white border-0">
             <h2 className="mb-4 text-center text-primary fw-bold">
               📝 Post a New Task
             </h2>
+
             {error && <div className="alert alert-danger">{error}</div>}
+
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
                 <label className="form-label fw-semibold">Title</label>
@@ -70,6 +75,7 @@ export default function PostTaskPage() {
                   required
                 />
               </div>
+
               <div className="mb-3">
                 <label className="form-label fw-semibold">Description</label>
                 <textarea
@@ -80,6 +86,7 @@ export default function PostTaskPage() {
                   required
                 />
               </div>
+
               <div className="mb-3">
                 <label className="form-label fw-semibold">Category</label>
                 <input
@@ -90,6 +97,7 @@ export default function PostTaskPage() {
                   required
                 />
               </div>
+
               <div className="mb-3">
                 <label className="form-label fw-semibold">Credits Offered</label>
                 <input
@@ -101,6 +109,7 @@ export default function PostTaskPage() {
                   min={1}
                 />
               </div>
+
               <div className="mb-3">
                 <label className="form-label fw-semibold">Deadline</label>
                 <input
@@ -111,9 +120,10 @@ export default function PostTaskPage() {
                   required
                 />
               </div>
+
               <button
                 type="submit"
-                className="btn btn-primary w-100"
+                className="btn btn-primary w-100 rounded-3 fw-semibold"
                 disabled={loading}
               >
                 {loading ? "Posting..." : "Post Task"}
@@ -122,6 +132,31 @@ export default function PostTaskPage() {
           </div>
         </div>
       </div>
+
+      {/* ✅ Simple Success Modal */}
+      <Modal
+        show={showSuccessModal}
+        onHide={handleCloseModal}
+        centered
+        backdrop="static"
+        contentClassName="border-0 rounded-3 shadow-sm"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title className="fw-semibold text-success">
+            Task Posted
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="mb-0 text-secondary">
+            Your task has been successfully posted and is now visible to other users.
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="success" onClick={handleCloseModal}>
+            View My Tasks
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

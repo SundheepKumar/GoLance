@@ -6,6 +6,7 @@ export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAs
   const [selectedTask, setSelectedTask] = useState(null);
 
   const token = sessionStorage.getItem("token");
+  const user = JSON.parse(sessionStorage.getItem("user"));
   const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 
   const handleStartTask = async (taskId) => {
@@ -15,7 +16,9 @@ export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAs
         headers,
         body: JSON.stringify({ status: "IN_PROGRESS" }),
       });
-      setAssignedTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: "IN_PROGRESS" } : t)));
+      setAssignedTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, status: "IN_PROGRESS" } : t))
+      );
     } catch (err) {
       console.error(err);
       alert("Error starting task");
@@ -30,7 +33,9 @@ export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAs
         body: JSON.stringify({ status: "PENDING" }),
       });
       setAssignedTasks((prev) =>
-        prev.map((t) => (t.id === taskId ? { ...t, status: "PENDING", showSubmitBox: false } : t))
+        prev.map((t) =>
+          t.id === taskId ? { ...t, status: "PENDING", showSubmitBox: false } : t
+        )
       );
     } catch (err) {
       console.error(err);
@@ -43,17 +48,27 @@ export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAs
     setShowDetailsModal(true);
   };
 
+  const handleMessageUser = (userId) => {
+    sessionStorage.setItem("chatWithUserId", userId);
+    window.location.href = "/messages";
+  };
+
+  const handleViewProfile = (userId) => {
+    window.location.href = `/profile/${userId}`;
+  };
+
   return (
     <>
       <div className="table-responsive">
-        <table className="table table-bordered table-hover text-center">
-          <thead>
+        <table className="table table-bordered table-hover text-center align-middle">
+          <thead className="table-primary">
             <tr>
               <th>Title</th>
               <th>Category</th>
               <th>Credits</th>
               <th>Deadline</th>
               <th>Status</th>
+              <th>Posted By</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -67,11 +82,36 @@ export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAs
                   <td>{task.deadline?.split?.("T")[0] || task.deadline}</td>
                   <td>{task.status}</td>
                   <td>
+                    {task.postedBy?.username || "N/A"}
+                    <div className="mt-1">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        className="me-1"
+                        onClick={() => handleViewProfile(task.postedBy?.id)}
+                      >
+                        View Profile
+                      </Button>
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={() => handleMessageUser(task.postedBy?.id)}
+                      >
+                        Message
+                      </Button>
+                    </div>
+                  </td>
+                  <td>
                     {task.status === "ALLOCATED" && (
-                      <Button variant="primary" size="sm" onClick={() => handleStartTask(task.id)}>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleStartTask(task.id)}
+                      >
                         Start Task
                       </Button>
                     )}
+
                     {task.status === "IN_PROGRESS" && (
                       <>
                         {!task.showSubmitBox && (
@@ -80,7 +120,11 @@ export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAs
                             size="sm"
                             onClick={() =>
                               setAssignedTasks((prev) =>
-                                prev.map((t) => (t.id === task.id ? { ...t, showSubmitBox: true } : t))
+                                prev.map((t) =>
+                                  t.id === task.id
+                                    ? { ...t, showSubmitBox: true }
+                                    : t
+                                )
                               )
                             }
                           >
@@ -88,14 +132,27 @@ export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAs
                           </Button>
                         )}
                         {task.showSubmitBox && (
-                          <Button variant="success" size="sm" onClick={() => handleSubmitTask(task.id)}>
+                          <Button
+                            variant="success"
+                            size="sm"
+                            onClick={() => handleSubmitTask(task.id)}
+                          >
                             Submit for Review
                           </Button>
                         )}
                       </>
                     )}
-                    {task.status === "PENDING" && <span className="text-warning fw-bold">Awaiting Review</span>}
-                    <Button variant="info" size="sm" className="ms-2" onClick={() => handleViewTask(task)}>
+
+                    {task.status === "PENDING" && (
+                      <span className="text-warning fw-bold">Awaiting Review</span>
+                    )}
+
+                    <Button
+                      variant="info"
+                      size="sm"
+                      className="ms-2"
+                      onClick={() => handleViewTask(task)}
+                    >
                       View Details
                     </Button>
                   </td>
@@ -103,13 +160,14 @@ export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAs
               ))
             ) : (
               <tr>
-                <td colSpan="6">No tasks assigned to you.</td>
+                <td colSpan="7">No tasks assigned to you.</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
 
+      {/* Task Details Modal */}
       <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Task Details</Modal.Title>
@@ -121,15 +179,21 @@ export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAs
               <p><strong>Description:</strong> {selectedTask.description}</p>
               <p><strong>Category:</strong> {selectedTask.category}</p>
               <p><strong>Credits:</strong> {selectedTask.creditsOffered}</p>
-              <p><strong>Deadline:</strong> {selectedTask.deadline?.split?.("T")[0] || selectedTask.deadline}</p>
+              <p>
+                <strong>Deadline:</strong>{" "}
+                {selectedTask.deadline?.split?.("T")[0] || selectedTask.deadline}
+              </p>
               <p><strong>Status:</strong> {selectedTask.status}</p>
+              <p><strong>Posted By:</strong> {selectedTask.postedBy?.username || "N/A"}</p>
             </>
           ) : (
             <p>No task selected.</p>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDetailsModal(false)}>Close</Button>
+          <Button variant="secondary" onClick={() => setShowDetailsModal(false)}>
+            Close
+          </Button>
         </Modal.Footer>
       </Modal>
     </>

@@ -32,7 +32,7 @@ export default function BidsPlacedByMe({ bids, setBids, fetchBids }) {
     <>
       <div className="table-responsive">
         <table className="table table-bordered table-hover text-center">
-          <thead>
+          <thead className="table-primary">
             <tr>
               <th>Task</th>
               <th>Credits Offered</th>
