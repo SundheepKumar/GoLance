@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { apiFetch } from "../api";
+import { TASKS, BIDS } from "../config/endpoints";
 
 export default function TaskPage() {
   const [tasks, setTasks] = useState([]);
@@ -17,7 +18,7 @@ export default function TaskPage() {
 
   const fetchTasks = async () => {
     try {
-      const data = await apiFetch("http://localhost:8080/api/tasks");
+      const data = await apiFetch(TASKS.GET_ALL);
       const filtered = data.filter(
         (task) => task.postedBy?.id !== user?.id && task.status === "OPEN"
       );
@@ -31,9 +32,7 @@ export default function TaskPage() {
 
   const fetchBids = async (taskId) => {
     try {
-      const data = await apiFetch(
-        `http://localhost:8080/api/bids/tasks/${taskId}`
-      );
+      const data = await apiFetch(BIDS.GET_BY_TASK(taskId));
       setBids(data);
     } catch (err) {
       console.error(err);
@@ -76,13 +75,10 @@ export default function TaskPage() {
     };
 
     try {
-      const newBid = await apiFetch(
-        `http://localhost:8080/api/bids/tasks/${selectedTask.id}`,
-        {
-          method: "POST",
-          body: JSON.stringify(payload),
-        }
-      );
+      const newBid = await apiFetch(BIDS.CREATE(selectedTask.id), {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
 
       // Append new bid and show success
       setBids((prev) => [...prev, newBid]);

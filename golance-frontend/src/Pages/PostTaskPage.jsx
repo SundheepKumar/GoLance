@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
 import { apiFetch } from "../api";
+import { TASKS } from "../config/endpoints";
 
 export default function PostTaskPage() {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export default function PostTaskPage() {
 
     setLoading(true);
     try {
-      await apiFetch("http://localhost:8080/api/tasks", {
+      await apiFetch(TASKS.CREATE, {
         method: "POST",
         body: JSON.stringify(payload),
       });

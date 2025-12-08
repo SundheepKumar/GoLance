@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { AUTH } from "../../config/endpoints";
 
 export default function LoginScreen({ onLogin }) {
   const location = useLocation();
@@ -27,7 +28,7 @@ export default function LoginScreen({ onLogin }) {
     setError(null);
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/login", {
+      const res = await fetch(AUTH.LOGIN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

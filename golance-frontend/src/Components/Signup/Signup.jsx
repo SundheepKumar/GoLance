@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Header from "../Header";
 import { useNavigate } from "react-router-dom";
+import { AUTH } from "../../config/endpoints";
 
 const departments = ["MIS", "MIC", "MID", "BTech", "MCA", "MBA"];
 const years = ["1", "2", "3", "4", "5"];
@@ -58,7 +59,7 @@ export default function SignupScreen({ onSignup }) {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/users/register", {
+      const res = await fetch(AUTH.REGISTER, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

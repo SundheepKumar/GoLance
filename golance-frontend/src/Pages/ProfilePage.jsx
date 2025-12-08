@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { USER } from "../config/endpoints";
 
 export default function ProfilePage() {
   const { id } = useParams();
@@ -25,7 +26,7 @@ export default function ProfilePage() {
       }
 
       try {
-        const res = await fetch(`http://localhost:8080/api/users/${id}`, { headers });
+        const res = await fetch(USER.GET_USER(id), { headers });
         if (!res.ok) throw new Error("Failed to fetch user details");
         const userData = await res.json();
         setUser(userData);

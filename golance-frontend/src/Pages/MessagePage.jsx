@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { MESSAGES } from "../config/endpoints";
 
 const MessagePage = () => {
   const [contacts, setContacts] = useState([]);
@@ -40,7 +41,7 @@ const MessagePage = () => {
   useEffect(() => {
     if (!currentUser) return;
     axios
-      .get(`http://localhost:8080/api/messages/contacts/${currentUser.id}`)
+      .get(MESSAGES.GET_CONTACTS(currentUser.id))
       .then((res) => setContacts(res.data))
       .catch((err) => console.error("Error fetching contacts:", err));
   }, [currentUser]);
@@ -49,9 +50,7 @@ const MessagePage = () => {
   useEffect(() => {
     if (!selectedContact || !currentUser) return;
     axios
-      .get(
-        `http://localhost:8080/api/messages/conversation/${currentUser.id}/${selectedContact.id}`
-      )
+      .get(MESSAGES.GET_CONVERSATION(currentUser.id, selectedContact.id))
       .then((res) => setMessages(res.data))
       .then(() => {
         setContacts((prev) =>
@@ -135,9 +134,7 @@ const MessagePage = () => {
     if (!selectedContact || !currentUser) return;
     const interval = setInterval(() => {
       axios
-        .get(
-          `http://localhost:8080/api/messages/conversation/${currentUser.id}/${selectedContact.id}`
-        )
+        .get(MESSAGES.GET_CONVERSATION(currentUser.id, selectedContact.id))
         .then((res) => setMessages(res.data))
         .catch(() => {});
     }, 5000);

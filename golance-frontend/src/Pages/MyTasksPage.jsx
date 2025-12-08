@@ -3,7 +3,8 @@ import { Button } from "react-bootstrap";
 import TasksPostedByMe from "./TasksPostedByMe";
 import BidsPlacedByMe from "./BidsPlacedByMe";
 import AssignedTasks from "./AssignedTasks";
-import { apiFetch } from "../api"; // optional if using your custom fetch
+import { TASKS, BIDS } from "../config/endpoints";
+import { apiFetch } from "../api";
 
 export default function MyTasksPage() {
   const [activeTab, setActiveTab] = useState("posted");
@@ -24,7 +25,7 @@ export default function MyTasksPage() {
   const fetchTasks = async () => {
     if (!userId) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/tasks/user/${userId}`, { headers });
+      const res = await fetch(TASKS.GET_BY_USER(userId), { headers });
       const data = await res.json();
       setTasks(data);
     } catch (err) {
@@ -35,7 +36,7 @@ export default function MyTasksPage() {
   const fetchBids = async () => {
     if (!userId) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/bids/user/${userId}`, { headers });
+      const res = await fetch(BIDS.GET_BY_USER(userId), { headers });
       const data = await res.json();
       setBids(data);
     } catch (err) {
@@ -46,7 +47,7 @@ export default function MyTasksPage() {
   const fetchAssignedTasks = async () => {
     if (!userId) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/tasks/user/${userId}/assigned-tasks`, { headers });
+      const res = await fetch(TASKS.GET_ASSIGNED(userId), { headers });
       const data = await res.json();
       setAssignedTasks(data);
     } catch (err) {

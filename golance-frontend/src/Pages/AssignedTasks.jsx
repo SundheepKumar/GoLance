@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Modal } from "react-bootstrap";
+import { TASKS } from "../config/endpoints";
 
 export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAssignedTasks }) {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -11,7 +12,7 @@ export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAs
 
   const handleStartTask = async (taskId) => {
     try {
-      await fetch(`http://localhost:8080/api/tasks/${taskId}/status`, {
+      await fetch(TASKS.UPDATE_STATUS(taskId), {
         method: "PUT",
         headers,
         body: JSON.stringify({ status: "IN_PROGRESS" }),
@@ -27,7 +28,7 @@ export default function AssignedTasks({ assignedTasks, setAssignedTasks, fetchAs
 
   const handleSubmitTask = async (taskId) => {
     try {
-      await fetch(`http://localhost:8080/api/tasks/${taskId}/status`, {
+      await fetch(TASKS.UPDATE_STATUS(taskId), {
         method: "PUT",
         headers,
         body: JSON.stringify({ status: "PENDING" }),

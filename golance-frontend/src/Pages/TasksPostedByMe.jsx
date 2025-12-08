@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Modal } from "react-bootstrap";
+import { TASKS, BIDS, WALLET, USER, MESSAGES } from "../config/endpoints";
 
 export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -31,7 +32,7 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
   const confirmDelete = async () => {
     if (!deleteTaskId) return;
     try {
-      await fetch(`http://localhost:8080/api/tasks/${deleteTaskId}`, {
+      await fetch(TASKS.DELETE(deleteTaskId), {
         method: "DELETE",
         headers,
       });
@@ -47,11 +48,9 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
   // ---------- View Bids ----------
   const handleViewBids = async (taskId) => {
     try {
-      const res = await fetch(
-        `http://localhost:8080/api/bids/tasks/${taskId}`,
-        {
-          headers,
-        }
+      const res = await fetch(BIDS.GET_BY_TASK(taskId), {
+        headers,
+      }
       );
       const data = await res.json();
       setSelectedTaskBids(data.map((b) => ({ ...b, taskId })));
@@ -65,9 +64,10 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
   // ---------- Allocate Bid ----------
   const handleSelectBid = async (bid) => {
     try {
-      const res = await fetch(
-        `http://localhost:8080/api/bids/tasks/${bid.taskId}/allocate/${bid.id}`,
-        { method: "POST", headers }
+      const res = await fetch(BIDS.ALLOCATE(bid.taskId, bid.id), {
+        method: "POST",
+        headers,
+      }
       );
       const updatedTask = await res.json();
       alert(`Bid allocated to ${bid.bidderName} successfully!`);
@@ -91,7 +91,7 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
   // ---------- Update Status ----------
   const updateStatus = async (taskId, newStatus) => {
     try {
-      await fetch(`http://localhost:8080/api/tasks/${taskId}/status`, {
+      await fetch(TASKS.UPDATE_STATUS(taskId), {
         method: "PUT",
         headers,
         body: JSON.stringify({ status: newStatus }),
@@ -118,7 +118,7 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
   // ---------- Wallet Transfer ----------
   const handleCreditTransfer = async () => {
     try {
-      await fetch("http://localhost:8080/api/wallet/transfer", {
+      await fetch(WALLET.TRANSFER, {
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -141,7 +141,7 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
   // ---------- View Profile ----------
   const handleViewProfile = async (userId) => {
     try {
-      const res = await fetch(`http://localhost:8080/api/users/${userId}`, {
+      const res = await fetch(USER.GET_USER(userId), {
         headers,
       });
       const data = await res.json();
@@ -160,7 +160,7 @@ export default function TasksPostedByMe({ tasks, setTasks, fetchTasks }) {
 
     try {
       // 👇 Make sure chat exists (backend will ignore if it already does)
-      await fetch("http://localhost:8080/api/messages/start", {
+      await fetch(MESSAGES.START_CHAT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

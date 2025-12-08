@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { WALLET, TRANSACTIONS } from "../config/endpoints";
 
 export default function WalletPage() {
   const user = JSON.parse(sessionStorage.getItem("user"));
@@ -19,13 +20,13 @@ export default function WalletPage() {
   const fetchWalletData = async () => {
   try {
     // Fetch balance
-    const balanceRes = await fetch(`http://localhost:8080/api/wallet/balance/${userId}`, { headers });
+    const balanceRes = await fetch(WALLET.GET_BALANCE(userId), { headers });
     if (!balanceRes.ok) throw new Error("Failed to fetch balance");
     const balanceData = await balanceRes.json();
     setBalance(balanceData);
 
     // Fetch transactions
-    const txRes = await fetch(`http://localhost:8080/api/transactions/${userId}`, { headers });
+    const txRes = await fetch(TRANSACTIONS.GET_BY_USER(userId), { headers });
     if (!txRes.ok) throw new Error("Failed to fetch transactions");
     let txData = await txRes.json();
 
@@ -48,7 +49,7 @@ export default function WalletPage() {
   const handleRecharge = async () => {
     if (!rechargeAmount || parseInt(rechargeAmount) <= 0) return;
     try {
-      const res = await fetch("http://localhost:8080/api/wallet/recharge", {
+const res = await fetch(WALLET.RECHARGE, {
         method: "POST",
         headers,
         body: JSON.stringify({
